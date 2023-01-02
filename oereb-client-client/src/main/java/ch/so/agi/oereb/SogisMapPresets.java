@@ -31,9 +31,9 @@ import ol.tilegrid.WmtsTileGrid;
 import ol.tilegrid.WmtsTileGridOptions;
 import proj4.Proj4;
 
-public class MapPresets {
+public class SogisMapPresets {
     
-    private MapPresets() {
+    private SogisMapPresets() {
         throw new AssertionError();
     }
 
