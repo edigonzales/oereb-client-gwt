@@ -48,3 +48,8 @@ lucene:
 app:
     myVar: ${VAR:defaultValue}
     searchServiceUrl: ${SEARCH_SERVICE_URL:https://api3.geo.admin.ch/rest/services/api/SearchServer?sr=2056&origins=parcel,address&type=locations&searchText=}
+    oerebServiceUrls:
+      AG: https://api.geo.ag.ch/v2/oereb/
+      BE: https://www.oereb2.apps.be.ch/  
+      SO: https://geo.so.ch/api/oereb/  
+    

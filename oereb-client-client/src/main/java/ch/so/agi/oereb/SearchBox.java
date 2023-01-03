@@ -41,7 +41,8 @@ public class SearchBox implements IsElement<HTMLElement> {
     private Location location;
     private String pathname;
     
-    private AbortController abortController = null;
+    private AbortController searchAbortController = null;
+    private AbortController getegridAbortController = null;
 
     @SuppressWarnings("unchecked")
     public SearchBox(UrlComponents urlComponents, MyMessages messages, String searchServiceUrl) {
@@ -70,13 +71,13 @@ public class SearchBox implements IsElement<HTMLElement> {
                     return;
                 }
                 
-                if (abortController != null) {
-                    abortController.abort();
+                if (searchAbortController != null) {
+                    searchAbortController.abort();
                 }
 
-                abortController = new AbortController();
+                searchAbortController = new AbortController();
                 final RequestInit requestInit = RequestInit.create();
-                requestInit.setSignal(abortController.signal);
+                requestInit.setSignal(searchAbortController.signal);
 
 //                RequestInit requestInit = RequestInit.create();
 //                Headers headers = new Headers();
@@ -99,8 +100,8 @@ public class SearchBox implements IsElement<HTMLElement> {
                             String label = ((JsString) attrs.get("label")).normalize();
                             label = label.replace("<b>", "").replace("</b>", "");
                             String origin = ((JsString) attrs.get("origin")).normalize();
-                            double easting = ((JsNumber) attrs.get("x")).valueOf();
-                            double northing = ((JsNumber) attrs.get("y")).valueOf();
+                            double easting = ((JsNumber) attrs.get("y")).valueOf();
+                            double northing = ((JsNumber) attrs.get("x")).valueOf();
                             
                             Icon icon;
                             if (origin.equalsIgnoreCase("parcel")) {
@@ -119,7 +120,7 @@ public class SearchBox implements IsElement<HTMLElement> {
                             suggestItems.add(suggestItem);
                         }
                     }
-                    abortController = null;
+                    searchAbortController = null;
                     suggestionsHandler.onSuggestionsReady(suggestItems);
                     return null;
                 }).catch_(error -> {
@@ -175,6 +176,28 @@ public class SearchBox implements IsElement<HTMLElement> {
                 SuggestItem<SearchResult> item = (SuggestItem<SearchResult>) value;
                 SearchResult result = (SearchResult) item.getValue();
                 console.log(result);
+                
+                if (getegridAbortController != null) {
+                    getegridAbortController.abort();
+                }
+
+                String coord = result.getCoordinate().toStringXY(3).replace(" ", "");
+                
+                DomGlobal.fetch("getegrid?EN="+coord).then(response -> {
+                    if (!response.ok) {
+                        return null;
+                    }
+                    return response.text();
+                }).then(json -> {
+                    getegridAbortController = null;
+                    
+                    console.log(json.toString());
+
+                    return null;
+                }).catch_(error -> {
+                    console.log(error);
+                    return null;
+                });
                 
                 
                 // TODO egrid / coordinate?
