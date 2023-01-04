@@ -13,6 +13,8 @@ public class SearchResult implements Serializable {
     
     private String canton;
     
+    private String egrid;
+    
     private String searchText;
 
     public String getLabel() {
@@ -45,6 +47,14 @@ public class SearchResult implements Serializable {
 
     public void setCanton(String canton) {
         this.canton = canton;
+    }
+
+    public String getEgrid() {
+        return egrid;
+    }
+
+    public void setEgrid(String egrid) {
+        this.egrid = egrid;
     }
 
     public String getSearchText() {

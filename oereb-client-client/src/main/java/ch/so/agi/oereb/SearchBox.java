@@ -149,7 +149,6 @@ public class SearchBox implements IsElement<HTMLElement> {
         resetIcon.addEventListener("click", new EventListener() {
             @Override
             public void handleEvent(Event evt) {
-                console.log("fubar");
                 HTMLInputElement el =(HTMLInputElement) suggestBox.getInputElement().element();
                 el.value = "";
                 suggestBox.unfocus();                
@@ -219,7 +218,8 @@ public class SearchBox implements IsElement<HTMLElement> {
                 }).catch_(error -> {
                     console.log(error);
                     return null;
-                });            }
+                });            
+            }
         });
 
         HTMLElement suggestBoxDiv = div().id("suggestbox-div").add(suggestBox).element();

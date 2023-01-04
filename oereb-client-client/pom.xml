@@ -22,6 +22,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.gwtproject.xml</groupId>
+      <artifactId>gwt-xml</artifactId>
+      <version>1.0.0-RC1</version>
+    </dependency>
+
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>oereb-client-shared</artifactId>
       <version>${project.version}</version>
