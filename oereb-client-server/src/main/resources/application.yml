@@ -50,6 +50,24 @@ app:
     searchServiceUrl: ${SEARCH_SERVICE_URL:https://api3.geo.admin.ch/rest/services/api/SearchServer?sr=2056&origins=parcel,address&type=locations&searchText=}
     oerebServiceUrls:
       AG: https://api.geo.ag.ch/v2/oereb/
-      BE: https://www.oereb2.apps.be.ch/  
-      SO: https://geo.so.ch/api/oereb/  
-    
+      AI: https://oereb.ai.ch/ktai/wsgi/oereb/
+      AR: https://oereb.ar.ch/ktar/wsgi/oereb/
+      BE: https://www.oereb2.apps.be.ch/
+      BL: https://oereb.geo.bl.ch/
+      BS: https://api.oereb.bs.ch/
+      FR: https://geo.fr.ch/RDPPF_ws/RdppfSVC.svc/
+      GR: https://oereb.geo.gr.ch/oereb/
+      JU: https://geo.jura.ch/crdppf_server/
+      LU: https://svc.geo.lu.ch/oereb/
+      NE: https://sitn.ne.ch/crdppf/
+      NW: https://oereb.gis-daten.ch/oereb/
+      OW: https://oereb.gis-daten.ch/oereb/
+      SG: https://oereb.geo.sg.ch/ktsg/wsgi/oereb/
+      SO: https://geo.so.ch/api/oereb/
+      TG: https://map.geo.tg.ch/services/oereb/
+      TI: https://cloud.geo.ti.ch/oereb2/
+      UR: https://prozessor-oereb.ur.ch/oereb/
+      VS: https://rdppfvs.geopol.ch/  
+      ZG: https://oereb.zg.ch/ors/
+      ZH: https://maps.zh.ch/oereb/v2/
+      

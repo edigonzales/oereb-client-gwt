@@ -1,24 +1,35 @@
 package ch.so.agi.oereb;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.http.HttpClient;
 import java.net.http.HttpClient.Redirect;
 import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionService;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -58,6 +69,33 @@ public class MainController {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
+    private static final class GetResult {
+        String URL;
+        int STATUS_CODE;
+        Long TIMING;
+    
+        @Override public String toString(){
+            return "Result:" + STATUS_CODE + " " + TIMING + " msecs " + URL;
+          }
+    }    
+    
+    private final class Task implements Callable<GetResult> {
+        Task(String url) {
+            this.url = url;
+        }
+
+        /** Access a URL, and see if you get a healthy response. */
+        @Override
+        public GetResult call() throws Exception {
+            return pingAndReportStatus(url);
+        }
+
+        private final String url;
+    }
+    
+    
+
+    
     @PostConstruct
     public void init() throws Exception {
     }
@@ -72,10 +110,50 @@ public class MainController {
         return settings;
     }
 
+    private GetResult pingAndReportStatus(String URL) throws MalformedURLException {
+        GetResult result = new GetResult();
+        result.URL = URL;
+        long start = System.currentTimeMillis();
+        URL url = new URL(URL);
+        try {
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+            connection.connect();
+            result.STATUS_CODE = connection.getResponseCode();
+            long end = System.currentTimeMillis();
+            result.TIMING = end - start;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    
     @RequestMapping(value = "/getegrid", method = RequestMethod.GET, produces = { "application/json" })
-    public void getEgrid(@RequestParam(value="EN", required=true) String coord) throws URISyntaxException, InterruptedException, ExecutionException {
+    public void getEgrid(@RequestParam(value = "EN", required = true) String coord)
+            throws URISyntaxException, InterruptedException, ExecutionException {
         log.info("EN: <{}>", coord);
 
+        ExecutorService executor = Executors.newFixedThreadPool(10);
+        CompletionService<GetResult> compService = new ExecutorCompletionService<>(executor);
+
+        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
+            String requestUrl = entry.getValue() + "getegrid/xml/?EN=" + coord;
+            log.info(requestUrl);
+            Task task = new Task(requestUrl);
+            compService.submit(task);
+        }
+
+        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
+            Future<GetResult> future = compService.take();
+            log.info(future.get().toString());
+        }
+        executor.shutdown(); // always reclaim resources
+    }
+
+
+        
+        
 //        ExecutorService pool = Executors.newFixedThreadPool(5);
 //        pool.shutdownNow();
         
@@ -99,105 +177,101 @@ public class MainController {
 //        }
 
 
-        ConcurrentHashMap<String, String> tempResults = new ConcurrentHashMap();
-
-        HttpRequest request;
-        
-        ExecutorService executor = Executors.newFixedThreadPool(1);
-
-        HttpClient client = HttpClient.newBuilder()
-                .executor(executor)
-                .version(Version.HTTP_1_1)
-                .followRedirects(Redirect.NEVER)
-                .connectTimeout(Duration.ofSeconds(2))
-                .build();
-
-        Set<CompletableFuture> futures = new HashSet();
-
-        try {
-            for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
-                String requestUrl = entry.getValue() + "getegrid/xml/?EN=" + coord;
-                log.info(requestUrl);
-                
-                URI uri = new URI(requestUrl);
-
-                request = HttpRequest.newBuilder()
-                        .uri(uri)
-                        .build();
-
-                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                        .thenAccept(resp -> {  
-                            String body = resp.body();
-                            log.info("requestUrl: " + requestUrl + "\n" + body);
-                            
-                            try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException e1) {
-                                // TODO Auto-generated catch block
-                                e1.printStackTrace();
-                            }
-                            
-                            
-                            if (body.contains("egrid")) {System.out.println("shutdown");
-                              try {
-                                  executor.shutdownNow();
-
-                                  executor.awaitTermination(1, TimeUnit.MILLISECONDS);
-                            } catch (InterruptedException e) {
-                                // TODO Auto-generated catch block
-                                e.printStackTrace();
-                            }}
-                            
-                            
-                            
-                            
+//        ConcurrentHashMap<String, String> tempResults = new ConcurrentHashMap();
+//
+//        HttpRequest request;
+//        
+//        ExecutorService executor = Executors.newFixedThreadPool(1);
+//
+//        HttpClient client = HttpClient.newBuilder()
+//                .executor(executor)
+//                .version(Version.HTTP_1_1)
+//                .followRedirects(Redirect.NEVER)
+//                .connectTimeout(Duration.ofSeconds(2))
+//                .build();
+//
+//        Set<CompletableFuture> futures = new HashSet();
+//
+//        try {
+//            for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
+//                String requestUrl = entry.getValue() + "getegrid/xml/?EN=" + coord;
+//                log.info(requestUrl);
+//                
+//                URI uri = new URI(requestUrl);
+//
+//                request = HttpRequest.newBuilder()
+//                        .uri(uri)
+//                        .build();
+//
+//                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+//                        .thenAccept(resp -> {  
+//                            String body = resp.body();
+//                            log.info("requestUrl: " + requestUrl + "\n" + body);
+//                            
 //                            try {
-//                                Thread.sleep(10000);
+//                                Thread.sleep(500);
+//                            } catch (InterruptedException e1) {
+//                                // TODO Auto-generated catch block
+//                                e1.printStackTrace();
+//                            }
+//                            
+//                            
+//                            if (body.contains("egrid")) {System.out.println("shutdown");
+//                              try {
+//                                  executor.shutdownNow();
+//
+//                                  executor.awaitTermination(1, TimeUnit.MILLISECONDS);
 //                            } catch (InterruptedException e) {
 //                                // TODO Auto-generated catch block
 //                                e.printStackTrace();
-//                            }
-
-                            // the task returns a JSON Object, for convenience of handling
-                            
-                            // as you see below, it is very easy and convenient to define operations
-                            // on the body (here, a String) returned by each concurrent task 
-                            
-//                            JsonReader jsonReader = Json.createReader(new StringReader(body));
-//                            JsonObject jsonObject = jsonReader.readObject();
-//                            Document docReturn = new Document();
-//                            if (jsonObject != null && !jsonObject.isEmpty()) {
+//                            }}
+//                            
+//                            
+//                            
+//                            
+////                            try {
+////                                Thread.sleep(10000);
+////                            } catch (InterruptedException e) {
+////                                // TODO Auto-generated catch block
+////                                e.printStackTrace();
+////                            }
 //
-//                                String key = jsonObject.keySet().iterator().next();
-//                                docReturn.setId(Integer.valueOf(key));
-//                                docReturn.setText(mapOfLines.get(Integer.valueOf(key)));
+//                            // the task returns a JSON Object, for convenience of handling
+//                            
+//                            // as you see below, it is very easy and convenient to define operations
+//                            // on the body (here, a String) returned by each concurrent task 
+//                            
+////                            JsonReader jsonReader = Json.createReader(new StringReader(body));
+////                            JsonObject jsonObject = jsonReader.readObject();
+////                            Document docReturn = new Document();
+////                            if (jsonObject != null && !jsonObject.isEmpty()) {
+////
+////                                String key = jsonObject.keySet().iterator().next();
+////                                docReturn.setId(Integer.valueOf(key));
+////                                docReturn.setText(mapOfLines.get(Integer.valueOf(key)));
+////
+////                                // Category._11 is the label for "positive sentiment" 
+////                                if (jsonObject.getString(key).equals(Category._11.toString())) {
+////                                    docReturn.setSentiment(Categories.Category._11);
+////                                }
+////
+////                                // Category._12 is the label for "negative sentiment" 
+////                                if (jsonObject.getString(key).equals(Category._12.toString())) {
+////                                    docReturn.setSentiment(Categories.Category._12);
+////                                }
+////                                
+////                                tempResults.put(Integer.valueOf(key), docReturn);
+////                            }
+//                        });
+//                futures.add(future);
+//            }
+//            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));            
+//            combinedFuture.join();
+//            log.info("******finito");
 //
-//                                // Category._11 is the label for "positive sentiment" 
-//                                if (jsonObject.getString(key).equals(Category._11.toString())) {
-//                                    docReturn.setSentiment(Categories.Category._11);
-//                                }
-//
-//                                // Category._12 is the label for "negative sentiment" 
-//                                if (jsonObject.getString(key).equals(Category._12.toString())) {
-//                                    docReturn.setSentiment(Categories.Category._12);
-//                                }
-//                                
-//                                tempResults.put(Integer.valueOf(key), docReturn);
-//                            }
-                        });
-                futures.add(future);
-            }
-            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));            
-            combinedFuture.join();
-            log.info("******finito");
-
-        
-        } catch (URISyntaxException exception) {
-            System.out.println("URI syntax exception: " + exception);
-        } 
-    }
-
-    
-    
+//        
+//        } catch (URISyntaxException exception) {
+//            System.out.println("URI syntax exception: " + exception);
+//        } 
     
 }
