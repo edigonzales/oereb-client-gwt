@@ -11,6 +11,8 @@ public class SearchResult implements Serializable {
     
     private ol.Coordinate coordinate;
     
+    private String canton;
+    
     private String searchText;
 
     public String getLabel() {
@@ -35,6 +37,14 @@ public class SearchResult implements Serializable {
 
     public void setCoordinate(ol.Coordinate coordinate) {
         this.coordinate = coordinate;
+    }
+
+    public String getCanton() {
+        return canton;
+    }
+
+    public void setCanton(String canton) {
+        this.canton = canton;
     }
 
     public String getSearchText() {

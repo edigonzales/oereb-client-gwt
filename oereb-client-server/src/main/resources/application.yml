@@ -48,6 +48,7 @@ lucene:
 app:
     myVar: ${VAR:defaultValue}
     searchServiceUrl: ${SEARCH_SERVICE_URL:https://api3.geo.admin.ch/rest/services/api/SearchServer?sr=2056&origins=parcel,address&type=locations&searchText=}
+    cantonServiceUrl: ${CANTON_SERVICE_URL:https://api3.geo.admin.ch/rest/services/all/MapServer/identify?geometryFormat=geojson&geometryType=esriGeometryPoint&imageDisplay=1624,616,96&lang=en&layers=all:ch.swisstopo.swissboundaries3d-kanton-flaeche.fill&limit=1&mapExtent=2468000,1068500,2844000,1316500&returnGeometry=false&sr=2056&tolerance=1&geometry=}
     oerebServiceUrls:
       AG: https://api.geo.ag.ch/v2/oereb/
       AI: https://oereb.ai.ch/ktai/wsgi/oereb/

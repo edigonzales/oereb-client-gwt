@@ -23,6 +23,8 @@ import elemental2.core.JsArray;
 import elemental2.core.JsString;
 import elemental2.core.JsNumber;
 import elemental2.dom.AbortController;
+import elemental2.dom.CustomEvent;
+import elemental2.dom.CustomEventInit;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Event;
 import elemental2.dom.EventListener;
@@ -43,14 +45,14 @@ public class SearchBox implements IsElement<HTMLElement> {
     
     private AbortController searchAbortController = null;
     private AbortController getegridAbortController = null;
-
+    
     @SuppressWarnings("unchecked")
-    public SearchBox(UrlComponents urlComponents, MyMessages messages, String searchServiceUrl) {
+    public SearchBox(UrlComponents urlComponents, MyMessages messages, String searchServiceUrl, String cantonServiceUrl) {
         root = div().element();
 
         location = urlComponents.getLocation();
         pathname = urlComponents.getPathname();
-
+        
         HTMLElement searchCard = div().id("search-card").element();
 //        body().add(searchDiv);
 
@@ -172,53 +174,58 @@ public class SearchBox implements IsElement<HTMLElement> {
 //                Headers headers = new Headers();
 //                headers.append("Content-Type", "application/x-www-form-urlencoded"); 
 //                requestInit.setHeaders(headers);
-
+                
                 SuggestItem<SearchResult> item = (SuggestItem<SearchResult>) value;
                 SearchResult result = (SearchResult) item.getValue();
-                console.log(result);
                 
                 if (getegridAbortController != null) {
                     getegridAbortController.abort();
                 }
-
-                String coord = result.getCoordinate().toStringXY(3).replace(" ", "");
+                getegridAbortController = new AbortController();
+                final RequestInit requestInit = RequestInit.create();
+                requestInit.setSignal(getegridAbortController.signal);
                 
-                DomGlobal.fetch("getegrid?EN="+coord).then(response -> {
+                String coord = result.getCoordinate().toStringXY(3).replace(" ", "");
+                                
+                DomGlobal.fetch(cantonServiceUrl+coord, requestInit).then(response -> {
                     if (!response.ok) {
                         return null;
                     }
                     return response.text();
                 }).then(json -> {
+                    JsPropertyMap<?> parsed = Js.cast(Global.JSON.parse(json));
+                    JsArray<?> results = Js.cast(parsed.get("results"));
+                    if (results.length > 0) {
+                        JsPropertyMap<?> resultObj = Js.cast(results.getAt(0));
+                        if (resultObj.has("properties")) {
+                            JsPropertyMap properties = (JsPropertyMap) resultObj.get("properties");
+                            String canton = ((JsString) properties.get("ak")).normalize();                            
+                            result.setCanton(canton);
+                            
+                            CustomEventInit eventInit = CustomEventInit.create();
+                            eventInit.setDetail(result);
+                            eventInit.setBubbles(true);
+                            CustomEvent event = new CustomEvent("location_found", eventInit);
+                            root.dispatchEvent(event);
+                        }
+                        
+                        // TODO: 
+                        // - nichts gefunden
+                        // - Kanton nicht ready für ÖREB-Kataster
+                        
+                    }
                     getegridAbortController = null;
-                    
-                    console.log(json.toString());
-
                     return null;
                 }).catch_(error -> {
                     console.log(error);
                     return null;
-                });
-                
-                
-                // TODO egrid / coordinate?
-                // bubbling?
-
-                // Kanton hier abfragen?
-                
-            }
+                });            }
         });
 
-        
-        
         HTMLElement suggestBoxDiv = div().id("suggestbox-div").add(suggestBox).element();
         searchCard.appendChild(suggestBoxDiv);
 
-        
-        
-        
-        
         root.appendChild(searchCard);
-
     }
 
     @Override

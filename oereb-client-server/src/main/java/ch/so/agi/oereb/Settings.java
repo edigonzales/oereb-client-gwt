@@ -14,6 +14,8 @@ public class Settings {
     
     private String searchServiceUrl;
     
+    private String cantonServiceUrl;
+
     private HashMap<String,String> oerebServiceUrls;
 
     public String getMyVar() {
@@ -30,6 +32,14 @@ public class Settings {
 
     public void setSearchServiceUrl(String searchServiceUrl) {
         this.searchServiceUrl = searchServiceUrl;
+    }
+
+    public String getCantonServiceUrl() {
+        return cantonServiceUrl;
+    }
+
+    public void setCantonServiceUrl(String cantonServiceUrl) {
+        this.cantonServiceUrl = cantonServiceUrl;
     }
 
     public HashMap<String, String> getOerebServiceUrls() {

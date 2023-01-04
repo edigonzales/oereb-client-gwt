@@ -83,7 +83,9 @@ public class App implements EntryPoint {
     // Application settings
     private String myVar;
     private String SEARCH_SERVICE_URL;
-
+    private String CANTON_SERVICE_URL;
+    private JsPropertyMap<Object> OEREB_SERVICE_URLS;
+    
     // Format settings
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
     private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
@@ -126,7 +128,8 @@ public class App implements EntryPoint {
                 try {
                     JsPropertyMap<Object> propertiesMap = Js.asPropertyMap(Global.JSON.parse(responseText));
                     SEARCH_SERVICE_URL = propertiesMap.getAsAny("searchServiceUrl").asString();
-
+                    CANTON_SERVICE_URL = propertiesMap.getAsAny("cantonServiceUrl").asString();
+                    OEREB_SERVICE_URLS = propertiesMap.getAsAny("oerebServiceUrls").asPropertyMap();
                 } catch (Exception e) {
                     DomGlobal.window.alert("Error loading settings!");
                     DomGlobal.console.error("Error loading settings!", e);
@@ -150,13 +153,26 @@ public class App implements EntryPoint {
     public void init() {                
         // Add and create ol3 map element and object.
         body().add(div().id(MAP_DIV_ID));
-//        map = SogisMapPresets.getBlakeAndWhiteMap(MAP_DIV_ID);
         map = new GeodiensteMapPreset().getMap(MAP_DIV_ID);
         
         // Search box                        
-        SearchBox searchBox = new SearchBox(urlComponents, messages, SEARCH_SERVICE_URL);
+        SearchBox searchBox = new SearchBox(urlComponents, messages, SEARCH_SERVICE_URL, CANTON_SERVICE_URL);
         body().add(searchBox);
 
+        body().element().addEventListener("location_found", new EventListener() {
+            @Override
+            public void handleEvent(Event evt) {
+                console.log("FUUUUUUBAR2");
+                
+                // getEgridByCoordAndCanton
+
+            }
+        });
+
+        
+        /*
+         * EGRID benötigte ich eigentlich im Browser nach einer Suche im Suchfeld nicht.
+         */
         
         
         

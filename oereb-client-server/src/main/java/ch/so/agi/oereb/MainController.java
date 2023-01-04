@@ -47,16 +47,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 public class MainController {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-    @Value("${lucene.queryDefaultRecords}")
-    private Integer QUERY_DEFAULT_RECORDS;
-
-    @Value("${lucene.queryMaxRecords}")
-    private Integer QUERY_MAX_RECORDS;   
+    @Autowired
+    ObjectMapper mapper;
 
     @Autowired
     Settings settings;
@@ -69,29 +71,29 @@ public class MainController {
             .connectTimeout(Duration.ofSeconds(10))
             .build();
 
-    private static final class GetResult {
-        String URL;
-        int STATUS_CODE;
-        Long TIMING;
-    
-        @Override public String toString(){
-            return "Result:" + STATUS_CODE + " " + TIMING + " msecs " + URL;
-          }
-    }    
-    
-    private final class Task implements Callable<GetResult> {
-        Task(String url) {
-            this.url = url;
-        }
-
-        /** Access a URL, and see if you get a healthy response. */
-        @Override
-        public GetResult call() throws Exception {
-            return pingAndReportStatus(url);
-        }
-
-        private final String url;
-    }
+//    private static final class GetResult {
+//        String URL;
+//        int STATUS_CODE;
+//        Long TIMING;
+//    
+//        @Override public String toString(){
+//            return "Result:" + STATUS_CODE + " " + TIMING + " msecs " + URL;
+//          }
+//    }    
+//    
+//    private final class Task implements Callable<GetResult> {
+//        Task(String url) {
+//            this.url = url;
+//        }
+//
+//        /** Access a URL, and see if you get a healthy response. */
+//        @Override
+//        public GetResult call() throws Exception {
+//            return pingAndReportStatus(url);
+//        }
+//
+//        private final String url;
+//    }
     
     
 
@@ -110,45 +112,65 @@ public class MainController {
         return settings;
     }
 
-    private GetResult pingAndReportStatus(String URL) throws MalformedURLException {
-        GetResult result = new GetResult();
-        result.URL = URL;
-        long start = System.currentTimeMillis();
-        URL url = new URL(URL);
-        try {
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            connection.connect();
-            result.STATUS_CODE = connection.getResponseCode();
-            long end = System.currentTimeMillis();
-            result.TIMING = end - start;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return result;
-    }
+//    private GetResult pingAndReportStatus(String URL) throws MalformedURLException {
+//        GetResult result = new GetResult();
+//        result.URL = URL;
+//        long start = System.currentTimeMillis();
+//        URL url = new URL(URL);
+//        try {
+//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+//            connection.setRequestMethod("GET");
+//            connection.connect();
+//            result.STATUS_CODE = connection.getResponseCode();
+//            long end = System.currentTimeMillis();
+//            result.TIMING = end - start;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        return result;
+//    }
 
     
     @RequestMapping(value = "/getegrid", method = RequestMethod.GET, produces = { "application/json" })
-    public void getEgrid(@RequestParam(value = "EN", required = true) String coord)
-            throws URISyntaxException, InterruptedException, ExecutionException {
+    public void getEgrid(@RequestParam(value = "EN", required = true) String coord) {
         log.info("EN: <{}>", coord);
 
-        ExecutorService executor = Executors.newFixedThreadPool(10);
-        CompletionService<GetResult> compService = new ExecutorCompletionService<>(executor);
+        String cantonServiceUrl = settings.getCantonServiceUrl();
+        String requestUrl = cantonServiceUrl + coord;
+        log.info(requestUrl);
+        
+        RestTemplate restTemplate = new RestTemplate();
+        ResponseEntity<String> response = restTemplate.getForEntity(requestUrl, String.class);
+        log.info(response.getBody());
 
-        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
-            String requestUrl = entry.getValue() + "getegrid/xml/?EN=" + coord;
-            log.info(requestUrl);
-            Task task = new Task(requestUrl);
-            compService.submit(task);
+        if (response.getStatusCode().is2xxSuccessful()) {
+            try {
+                JsonNode root = mapper.readTree(response.getBody());
+                log.info("***"+root.get("results").get(0).get("properties").get("ak").asText());
+                String canton = root.get("results").get("properties").get("ak").asText();
+                log.info(canton);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+                // return...
+            }
         }
-
-        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
-            Future<GetResult> future = compService.take();
-            log.info(future.get().toString());
-        }
-        executor.shutdown(); // always reclaim resources
+        
+        
+//        ExecutorService executor = Executors.newFixedThreadPool(10);
+//        CompletionService<GetResult> compService = new ExecutorCompletionService<>(executor);
+//
+//        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
+//            String requestUrl = entry.getValue() + "getegrid/xml/?EN=" + coord;
+//            log.info(requestUrl);
+//            Task task = new Task(requestUrl);
+//            compService.submit(task);
+//        }
+//
+//        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
+//            Future<GetResult> future = compService.take();
+//            log.info(future.get().toString());
+//        }
+//        executor.shutdown(); // always reclaim resources
     }
 
 
