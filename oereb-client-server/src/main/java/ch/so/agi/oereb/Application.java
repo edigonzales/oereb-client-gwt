@@ -1,5 +1,10 @@
 package ch.so.agi.oereb;
 
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpClient.Version;
+import java.time.Duration;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -26,5 +31,14 @@ public class Application extends SpringBootServletInitializer {
     @Bean
     ForwardedHeaderFilter forwardedHeaderFilter() {
         return new ForwardedHeaderFilter();
+    }
+    
+    @Bean 
+    HttpClient createHttpClient() {
+        HttpClient httpClient = HttpClient.newBuilder()
+                .version(Version.HTTP_1_1)
+                .followRedirects(Redirect.NEVER)
+                .build();
+        return httpClient;
     }
 }

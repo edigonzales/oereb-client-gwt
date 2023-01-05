@@ -70,39 +70,10 @@ public class MainController {
    
     @Autowired
     Settings settings;
+    
+    @Autowired
+    HttpClient httpClient;
 
-//    private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
-//
-//    private static final HttpClient httpClient = HttpClient.newBuilder()
-//            .executor(executorService)
-//            .version(HttpClient.Version.HTTP_2)
-//            .connectTimeout(Duration.ofSeconds(10))
-//            .build();
-
-//    private static final class GetResult {
-//        String URL;
-//        int STATUS_CODE;
-//        Long TIMING;
-//    
-//        @Override public String toString(){
-//            return "Result:" + STATUS_CODE + " " + TIMING + " msecs " + URL;
-//          }
-//    }    
-//    
-//    private final class Task implements Callable<GetResult> {
-//        Task(String url) {
-//            this.url = url;
-//        }
-//
-//        /** Access a URL, and see if you get a healthy response. */
-//        @Override
-//        public GetResult call() throws Exception {
-//            return pingAndReportStatus(url);
-//        }
-//
-//        private final String url;
-//    }
-     
     @PostConstruct
     public void init() throws Exception {
     }
@@ -117,9 +88,8 @@ public class MainController {
         return settings;
     }
     
-    
     @RequestMapping(value = "/proxy/{request}/xml/", method = RequestMethod.GET, produces = { "application/xml" })
-    public String proxy(@PathVariable String request, @RequestParam Map<String, String> queryParameters) {
+    public ResponseEntity<String> proxy(@PathVariable String request, @RequestParam Map<String, String> queryParameters)  {
         String geometryParam = queryParameters.get(PARAM_GEOMETRY);
         String withGeometry = geometryParam!=null?Boolean.toString(PARAM_CONST_TRUE.equalsIgnoreCase(geometryParam)):"false";
         String coord = queryParameters.get(PARAM_EN);
@@ -137,193 +107,50 @@ public class MainController {
         
         System.out.println(requestUrl);
         
-        
-        return requestUrl;
-    }
-
-
-//    private GetResult pingAndReportStatus(String URL) throws MalformedURLException {
-//        GetResult result = new GetResult();
-//        result.URL = URL;
-//        long start = System.currentTimeMillis();
-//        URL url = new URL(URL);
-//        try {
-//            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-//            connection.setRequestMethod("GET");
-//            connection.connect();
-//            result.STATUS_CODE = connection.getResponseCode();
-//            long end = System.currentTimeMillis();
-//            result.TIMING = end - start;
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//        return result;
-//    }
-
-    
-    @RequestMapping(value = "/getegrid", method = RequestMethod.GET, produces = { "application/json" })
-    public void getEgrid(@RequestParam(value = "EN", required = true) String coord) {
-        log.info("EN: <{}>", coord);
-
-        String cantonServiceUrl = settings.getCantonServiceUrl();
-        String requestUrl = cantonServiceUrl + coord;
-        log.info(requestUrl);
-        
-        RestTemplate restTemplate = new RestTemplate();
-        ResponseEntity<String> response = restTemplate.getForEntity(requestUrl, String.class);
-        log.info(response.getBody());
-
-        if (response.getStatusCode().is2xxSuccessful()) {
-            try {
-                JsonNode root = mapper.readTree(response.getBody());
-                log.info("***"+root.get("results").get(0).get("properties").get("ak").asText());
-                String canton = root.get("results").get("properties").get("ak").asText();
-                log.info(canton);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-                // return...
-            }
+        HttpResponse<String> response = null;
+        try {
+            HttpRequest httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
+                    .timeout(Duration.ofSeconds(120L)).build();
+            
+            response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            System.out.println(response.body().toString());
+        } catch (URISyntaxException | IOException | InterruptedException e) {
+            e.printStackTrace();
+            return new ResponseEntity<String>(new String(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         
+        int statusCode = response.statusCode();
+        if (statusCode == 200) {
+            return new ResponseEntity<String>(response.body(), HttpStatus.OK);            
+        } else if (statusCode == 204) {
+            return new ResponseEntity<String>(response.body(), HttpStatus.NO_CONTENT);            
+        }
         
-//        ExecutorService executor = Executors.newFixedThreadPool(10);
-//        CompletionService<GetResult> compService = new ExecutorCompletionService<>(executor);
-//
-//        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
-//            String requestUrl = entry.getValue() + "getegrid/xml/?EN=" + coord;
-//            log.info(requestUrl);
-//            Task task = new Task(requestUrl);
-//            compService.submit(task);
-//        }
-//
-//        for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
-//            Future<GetResult> future = compService.take();
-//            log.info(future.get().toString());
-//        }
-//        executor.shutdown(); // always reclaim resources
+        return new ResponseEntity<String>(new String(), HttpStatus.BAD_REQUEST);
     }
-
-
-        
-        
-//        ExecutorService pool = Executors.newFixedThreadPool(5);
-//        pool.shutdownNow();
-        
-        //        List<URI> targets = Arrays.asList(
-//                new URI("https://httpbin.org/get?name=mkyong1"),
-//                new URI("https://httpbin.org/get?name=mkyong2"),
-//                new URI("https://httpbin.org/get?name=mkyong3"));
+    
+//    @RequestMapping(value = "/getegrid", method = RequestMethod.GET, produces = { "application/json" })
+//    public void getEgrid(@RequestParam(value = "EN", required = true) String coord) {
+//        log.info("EN: <{}>", coord);
 //
-//        List<CompletableFuture<String>> result = targets.stream()
-//                .map(url -> httpClient.sendAsync(
-//                        HttpRequest.newBuilder(url)
-//                                .GET()
-//                                .setHeader("User-Agent", "Java 11 HttpClient Bot")
-//                                .build(),
-//                        HttpResponse.BodyHandlers.ofString())
-//                        .thenApply(response -> response.body()))
-//                .collect(Collectors.toList());
-//
-//        for (CompletableFuture<String> future : result) {
-//            System.out.println(future.get());
-//        }
-
-
-//        ConcurrentHashMap<String, String> tempResults = new ConcurrentHashMap();
-//
-//        HttpRequest request;
+//        String cantonServiceUrl = settings.getCantonServiceUrl();
+//        String requestUrl = cantonServiceUrl + coord;
+//        log.info(requestUrl);
 //        
-//        ExecutorService executor = Executors.newFixedThreadPool(1);
+//        RestTemplate restTemplate = new RestTemplate();
+//        ResponseEntity<String> response = restTemplate.getForEntity(requestUrl, String.class);
+//        log.info(response.getBody());
 //
-//        HttpClient client = HttpClient.newBuilder()
-//                .executor(executor)
-//                .version(Version.HTTP_1_1)
-//                .followRedirects(Redirect.NEVER)
-//                .connectTimeout(Duration.ofSeconds(2))
-//                .build();
-//
-//        Set<CompletableFuture> futures = new HashSet();
-//
-//        try {
-//            for (Map.Entry<String, String> entry : settings.getOerebServiceUrls().entrySet()) {
-//                String requestUrl = entry.getValue() + "getegrid/xml/?EN=" + coord;
-//                log.info(requestUrl);
-//                
-//                URI uri = new URI(requestUrl);
-//
-//                request = HttpRequest.newBuilder()
-//                        .uri(uri)
-//                        .build();
-//
-//                CompletableFuture<Void> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-//                        .thenAccept(resp -> {  
-//                            String body = resp.body();
-//                            log.info("requestUrl: " + requestUrl + "\n" + body);
-//                            
-//                            try {
-//                                Thread.sleep(500);
-//                            } catch (InterruptedException e1) {
-//                                // TODO Auto-generated catch block
-//                                e1.printStackTrace();
-//                            }
-//                            
-//                            
-//                            if (body.contains("egrid")) {System.out.println("shutdown");
-//                              try {
-//                                  executor.shutdownNow();
-//
-//                                  executor.awaitTermination(1, TimeUnit.MILLISECONDS);
-//                            } catch (InterruptedException e) {
-//                                // TODO Auto-generated catch block
-//                                e.printStackTrace();
-//                            }}
-//                            
-//                            
-//                            
-//                            
-////                            try {
-////                                Thread.sleep(10000);
-////                            } catch (InterruptedException e) {
-////                                // TODO Auto-generated catch block
-////                                e.printStackTrace();
-////                            }
-//
-//                            // the task returns a JSON Object, for convenience of handling
-//                            
-//                            // as you see below, it is very easy and convenient to define operations
-//                            // on the body (here, a String) returned by each concurrent task 
-//                            
-////                            JsonReader jsonReader = Json.createReader(new StringReader(body));
-////                            JsonObject jsonObject = jsonReader.readObject();
-////                            Document docReturn = new Document();
-////                            if (jsonObject != null && !jsonObject.isEmpty()) {
-////
-////                                String key = jsonObject.keySet().iterator().next();
-////                                docReturn.setId(Integer.valueOf(key));
-////                                docReturn.setText(mapOfLines.get(Integer.valueOf(key)));
-////
-////                                // Category._11 is the label for "positive sentiment" 
-////                                if (jsonObject.getString(key).equals(Category._11.toString())) {
-////                                    docReturn.setSentiment(Categories.Category._11);
-////                                }
-////
-////                                // Category._12 is the label for "negative sentiment" 
-////                                if (jsonObject.getString(key).equals(Category._12.toString())) {
-////                                    docReturn.setSentiment(Categories.Category._12);
-////                                }
-////                                
-////                                tempResults.put(Integer.valueOf(key), docReturn);
-////                            }
-//                        });
-//                futures.add(future);
+//        if (response.getStatusCode().is2xxSuccessful()) {
+//            try {
+//                JsonNode root = mapper.readTree(response.getBody());
+//                log.info("***"+root.get("results").get(0).get("properties").get("ak").asText());
+//                String canton = root.get("results").get("properties").get("ak").asText();
+//                log.info(canton);
+//            } catch (JsonProcessingException e) {
+//                e.printStackTrace();
+//                // return...
 //            }
-//            CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(futures.toArray((new CompletableFuture[0])));            
-//            combinedFuture.join();
-//            log.info("******finito");
-//
-//        
-//        } catch (URISyntaxException exception) {
-//            System.out.println("URI syntax exception: " + exception);
-//        } 
+//        }
     
 }
