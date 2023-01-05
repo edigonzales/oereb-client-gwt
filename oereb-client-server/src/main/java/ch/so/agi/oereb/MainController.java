@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -66,7 +67,7 @@ public class MainController {
 
     @Autowired
     ObjectMapper mapper;
-
+   
     @Autowired
     Settings settings;
 
@@ -101,10 +102,7 @@ public class MainController {
 //
 //        private final String url;
 //    }
-    
-    
-
-    
+     
     @PostConstruct
     public void init() throws Exception {
     }
@@ -122,14 +120,25 @@ public class MainController {
     
     @RequestMapping(value = "/proxy/{request}/xml/", method = RequestMethod.GET, produces = { "application/xml" })
     public String proxy(@PathVariable String request, @RequestParam Map<String, String> queryParameters) {
-        String geometryParam=queryParameters.get(PARAM_GEOMETRY);
-        String withGeometry=geometryParam!=null?Boolean.toString(PARAM_CONST_TRUE.equalsIgnoreCase(geometryParam)):"false";
-
-        System.out.println(withGeometry);
+        String geometryParam = queryParameters.get(PARAM_GEOMETRY);
+        String withGeometry = geometryParam!=null?Boolean.toString(PARAM_CONST_TRUE.equalsIgnoreCase(geometryParam)):"false";
+        String coord = queryParameters.get(PARAM_EN);
+        String egrid = queryParameters.get(PARAM_EGRID);
+        String canton = queryParameters.get(PARAM_CANTON);
+                
+        String baseUrl = settings.getOerebServiceUrls().get(canton.toUpperCase());
+        
+        String requestUrl = baseUrl;
+        if (request.equalsIgnoreCase("getegrid")) {
+             requestUrl += request + "/xml/?WITHGEOMETRY=" + withGeometry + "&EN=" + coord;  
+        } else if (request.equalsIgnoreCase("extract")) {
+            requestUrl += request + "/xml/?WITHGEOMETRY=" + withGeometry + "&EGRID=" + egrid;  
+        }
+        
+        System.out.println(requestUrl);
         
         
-        
-        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><foo>hallo</foo>";
+        return requestUrl;
     }
 
 
