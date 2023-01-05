@@ -256,6 +256,7 @@ public class App implements EntryPoint {
         // FIXME
         // - extent verkleinern
         // was ist imagesize?
+        // extent und imagesize weg und tolerance = 0.
         // https://api3.geo.admin.ch/rest/services/all/MapServer/identify?geometryFormat=geojson&geometryType=esriGeometryPoint&imageDisplay=1624,616,96&lang=en&layers=all:ch.swisstopo.swissboundaries3d-kanton-flaeche.fill&limit=1&mapExtent=2468000,1068500,2844000,1316500&returnGeometry=false&sr=2056&tolerance=1&geometry=2599558.846,1216956.994
         // -> BE statt SO
 
