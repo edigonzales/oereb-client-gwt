@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,19 +58,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class MainController {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
+    private static final String PARAM_CONST_TRUE = "TRUE";
+    private static final String PARAM_EN = "EN";
+    private static final String PARAM_EGRID = "EGRID";
+    private static final String PARAM_GEOMETRY = "GEOMETRY";
+    private static final String PARAM_CANTON = "CANTON";
+
     @Autowired
     ObjectMapper mapper;
 
     @Autowired
     Settings settings;
 
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
-
-    private static final HttpClient httpClient = HttpClient.newBuilder()
-            .executor(executorService)
-            .version(HttpClient.Version.HTTP_2)
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
+//    private static final ExecutorService executorService = Executors.newFixedThreadPool(1);
+//
+//    private static final HttpClient httpClient = HttpClient.newBuilder()
+//            .executor(executorService)
+//            .version(HttpClient.Version.HTTP_2)
+//            .connectTimeout(Duration.ofSeconds(10))
+//            .build();
 
 //    private static final class GetResult {
 //        String URL;
@@ -111,6 +118,20 @@ public class MainController {
     public Settings settings() {
         return settings;
     }
+    
+    
+    @RequestMapping(value = "/proxy/{request}/xml/", method = RequestMethod.GET, produces = { "application/xml" })
+    public String proxy(@PathVariable String request, @RequestParam Map<String, String> queryParameters) {
+        String geometryParam=queryParameters.get(PARAM_GEOMETRY);
+        String withGeometry=geometryParam!=null?Boolean.toString(PARAM_CONST_TRUE.equalsIgnoreCase(geometryParam)):"false";
+
+        System.out.println(withGeometry);
+        
+        
+        
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><foo>hallo</foo>";
+    }
+
 
 //    private GetResult pingAndReportStatus(String URL) throws MalformedURLException {
 //        GetResult result = new GetResult();

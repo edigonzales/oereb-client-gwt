@@ -190,7 +190,7 @@ public class App implements EntryPoint {
         String oerebServiceUrl = ((JsString) OEREB_SERVICE_URLS.get(searchResult.getCanton())).normalize();
         String coord = searchResult.getCoordinate().toStringXY(3).replace(" ", "");
 
-        DomGlobal.fetch(oerebServiceUrl + "getegrid/xml/?GEOMETRY=true&EN=" + coord, requestInit).then(response -> {
+        DomGlobal.fetch(oerebServiceUrl + "getegrid/xml/?GEOMETRY=true&EN=" + coord).then(response -> {
             if (!response.ok) {
                 DomGlobal.window.alert("!response.ok...");
                 return null;
