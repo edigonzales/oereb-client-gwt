@@ -9,7 +9,118 @@ import org.gwtproject.xml.client.Element;
 import org.gwtproject.xml.client.Node;
 import org.gwtproject.xml.client.NodeList;
 
+import ol.Coordinate;
+import ol.OLFactory;
+
 public class XMLUtils {
+    /**
+     * Erstellt eine Liste aus Grundstueck-Pojo aus einem GetEgridResponse-Element.
+     * 
+     * @param Element
+     * @return
+     */
+    public static List<Grundstueck> createGrundstuecke(Element root) {
+        List<Grundstueck> grundstueckeList = new ArrayList<Grundstueck>();
+
+        NodeList childNodes = root.getChildNodes();
+        Grundstueck grundstueck = null;
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            if (childNodes.item(i) instanceof Element) {
+                Element childElement = (Element) childNodes.item(i);
+                String nodeName = childElement.getNodeName();
+
+                if (nodeName.contains("egrid")) {
+                    grundstueck = new Grundstueck();
+                    grundstueck.setEgrid(childElement.getFirstChild().getNodeValue());
+                }
+
+                if (nodeName.contains("number")) {
+                    grundstueck.setNummer(childElement.getFirstChild().getNodeValue());
+                }
+
+                if (nodeName.contains("identDN")) {
+                    grundstueck.setNbident(childElement.getFirstChild().getNodeValue());
+                }
+
+                if (nodeName.contains("type")) {
+                    String art = XMLUtils.getLocalisedTextByLanguage(childElement, "de");
+                    grundstueck.setArt(art);
+                }
+
+                if (nodeName.contains("limit")) {
+                    ol.geom.Geometry geom = XMLUtils.createGeometry(childElement);
+                    grundstueck.setGeometrie(geom);
+                    grundstueckeList.add(grundstueck);
+                }
+            }
+        }
+        return grundstueckeList;
+    }
+    
+   /**
+    * Erstellt aus einem XML-Element mit INTERLIS-Kodierung
+    * ein Openlayers Polygon. Es wird nur der Geometrietyp
+    * 'Polygon' unterstützt.
+    * 
+    * @param Element
+    */
+    public static ol.geom.Geometry createGeometry(Element element) {
+        List<ol.Coordinate[]> ringList = new ArrayList<ol.Coordinate[]>();
+
+        // Exterior ring
+        List<Element> exteriorElementList = new ArrayList<Element>();
+        XMLUtils.getElementsByPath(element, "surface/exterior/polyline", exteriorElementList);
+
+        if (exteriorElementList.size() == 0) {
+            return null;
+        }
+
+        // There can only be only one exterior polyline.
+        Element exteriorPolyline = exteriorElementList.get(0);
+
+        List<ol.Coordinate> exteriorCoordList = new ArrayList<ol.Coordinate>();
+        NodeList exteriorChildNodes = exteriorPolyline.getChildNodes();
+        for (int i = 0; i < exteriorChildNodes.getLength(); i++) {
+            if (exteriorChildNodes.item(i) instanceof Element) {
+                Element childElement = (Element) exteriorChildNodes.item(i);
+
+                String c1 = XMLUtils.getElementValueByPath(childElement, "c1");
+                String c2 = XMLUtils.getElementValueByPath(childElement, "c2");
+
+                ol.Coordinate coord = OLFactory.createCoordinate(Double.valueOf(c1), Double.valueOf(c2));
+                exteriorCoordList.add(coord);
+            }
+        }
+
+        ringList.add((Coordinate[]) exteriorCoordList.toArray());
+
+        // Interior rings
+        List<Element> interiorElementList = new ArrayList<Element>();
+        XMLUtils.getElementsByPath(element, "surface/interior/polyline", interiorElementList);
+
+        if (interiorElementList.size() > 0) {
+            for (Element interiorPolyline : interiorElementList) {
+                List<ol.Coordinate> interiorCoordList = new ArrayList<ol.Coordinate>();
+                NodeList interiorChildNodes = interiorPolyline.getChildNodes();
+                for (int i = 0; i < interiorChildNodes.getLength(); i++) {
+                    if (interiorChildNodes.item(i) instanceof Element) {
+                        Element childElement = (Element) interiorChildNodes.item(i);
+
+                        String c1 = XMLUtils.getElementValueByPath(childElement, "c1");
+                        String c2 = XMLUtils.getElementValueByPath(childElement, "c2");
+
+                        ol.Coordinate coord = OLFactory.createCoordinate(Double.valueOf(c1), Double.valueOf(c2));
+                        interiorCoordList.add(coord);
+                    }
+                }
+                ringList.add((Coordinate[]) interiorCoordList.toArray());
+            }
+        }
+        
+        ol.geom.Polygon polygon = new ol.geom.Polygon((Coordinate[][]) ringList.toArray());
+        return polygon;
+    }
+
     /**
      * Liefert den Text eines LocalisedText-Elementes zurück gemäss gewünschter
      * Sprache. Wird die Sprache nicht gefunden, wird das erste Element, das

@@ -100,20 +100,17 @@ public class MainController {
         
         String requestUrl = baseUrl;
         if (request.equalsIgnoreCase("getegrid")) {
-             requestUrl += request + "/xml/?WITHGEOMETRY=" + withGeometry + "&EN=" + coord;  
+             requestUrl += request + "/xml/?GEOMETRY=" + withGeometry + "&EN=" + coord;  
         } else if (request.equalsIgnoreCase("extract")) {
-            requestUrl += request + "/xml/?WITHGEOMETRY=" + withGeometry + "&EGRID=" + egrid;  
+            requestUrl += request + "/xml/?GEOMETRY=" + withGeometry + "&EGRID=" + egrid;  
         }
-        
-        System.out.println(requestUrl);
-        
+                
         HttpResponse<String> response = null;
         try {
             HttpRequest httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
                     .timeout(Duration.ofSeconds(120L)).build();
             
             response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response.body().toString());
         } catch (URISyntaxException | IOException | InterruptedException e) {
             e.printStackTrace();
             return new ResponseEntity<String>(new String(), HttpStatus.INTERNAL_SERVER_ERROR);

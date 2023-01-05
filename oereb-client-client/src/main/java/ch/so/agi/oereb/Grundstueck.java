@@ -5,6 +5,7 @@ public class Grundstueck {
     private String nbident;
     private String egrid;
     private String art;
+    private String canton;
     private ol.geom.Geometry geometrie;
     
     public String getNummer() {
@@ -30,6 +31,12 @@ public class Grundstueck {
     }
     public void setArt(String art) {
         this.art = art;
+    }
+    public String getCanton() {
+        return canton;
+    }
+    public void setCanton(String canton) {
+        this.canton = canton;
     }
     public ol.geom.Geometry getGeometrie() {
         return geometrie;
