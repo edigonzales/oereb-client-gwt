@@ -1,6 +1,7 @@
 package ch.so.agi.oereb;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,6 +18,8 @@ public class Settings {
     private String cantonServiceUrl;
 
     private HashMap<String,String> oerebServiceUrls;
+    
+    private List<String> notSupportedCantons;
 
     public String getMyVar() {
         return myVar;
@@ -48,5 +51,13 @@ public class Settings {
 
     public void setOerebServiceUrls(HashMap<String, String> oerebServiceUrls) {
         this.oerebServiceUrls = oerebServiceUrls;
+    }
+
+    public List<String> getNotSupportedCantons() {
+        return notSupportedCantons;
+    }
+
+    public void setNotSupportedCantons(List<String> notSupportedCantons) {
+        this.notSupportedCantons = notSupportedCantons;
     }
 }

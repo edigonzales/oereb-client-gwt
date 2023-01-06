@@ -64,6 +64,7 @@ import elemental2.dom.Headers;
 import elemental2.dom.Location;
 import elemental2.dom.RequestInit;
 import elemental2.dom.XMLHttpRequest;
+import jsinterop.base.Any;
 import jsinterop.base.Js;
 import jsinterop.base.JsPropertyMap;
 import ol.AtPixelOptions;
@@ -103,6 +104,9 @@ public class App implements EntryPoint {
     private String SEARCH_SERVICE_URL;
     private String CANTON_SERVICE_URL;
     private JsPropertyMap<Object> OEREB_SERVICE_URLS;
+    
+    // Not supported cantons
+//    private List<String> notSupportedCantons = new ArrayList<>(Arrays.asList("GE", "LU", "SZ", "VD", "VS", "LI"));
 
     // Format settings
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
@@ -147,6 +151,12 @@ public class App implements EntryPoint {
                     SEARCH_SERVICE_URL = propertiesMap.getAsAny("searchServiceUrl").asString();
                     CANTON_SERVICE_URL = propertiesMap.getAsAny("cantonServiceUrl").asString();
                     OEREB_SERVICE_URLS = propertiesMap.getAsAny("oerebServiceUrls").asPropertyMap();
+                    console.log(propertiesMap.getAsAny("notSupportedCantons").asArray().toString());
+                    
+                    Any[] foo = propertiesMap.getAsAny("notSupportedCantons").asArray();
+                    
+                    
+                    
                 } catch (Exception e) {
                     DomGlobal.window.alert("Error loading settings!");
                     DomGlobal.console.error("Error loading settings!", e);
@@ -189,10 +199,10 @@ public class App implements EntryPoint {
     }
     
     private void getEgrid(SearchResult searchResult, boolean limit) {
-        String oerebServiceUrl = ((JsString) OEREB_SERVICE_URLS.get(searchResult.getCanton())).normalize();
+        String canton = searchResult.getCanton();
         String coord = searchResult.getCoordinate().toStringXY(3).replace(" ", "");
 
-        DomGlobal.fetch(oerebServiceUrl + "getegrid/xml/?GEOMETRY=true&EN=" + coord).then(response -> {
+        DomGlobal.fetch("proxy/getegrid/xml/?CANTON="+canton+"&GEOMETRY=true&EN=" + coord).then(response -> {
             if (!response.ok) {
                 DomGlobal.window.alert("!response.ok...");
                 return null;
@@ -253,14 +263,7 @@ public class App implements EntryPoint {
         double y = extent.getLowerLeftY() + extent.getHeight() / 2;
         view.setCenter(new Coordinate(x,y));
         
-        // FIXME
-        // - extent verkleinern
-        // was ist imagesize?
-        // extent und imagesize weg und tolerance = 0.
-        // https://api3.geo.admin.ch/rest/services/all/MapServer/identify?geometryFormat=geojson&geometryType=esriGeometryPoint&imageDisplay=1624,616,96&lang=en&layers=all:ch.swisstopo.swissboundaries3d-kanton-flaeche.fill&limit=1&mapExtent=2468000,1068500,2844000,1316500&returnGeometry=false&sr=2056&tolerance=1&geometry=2599558.846,1216956.994
-        // -> BE statt SO
-
-        
+       
         
         DomGlobal.fetch("proxy/extract/xml/?CANTON="+grundstueck.getCanton()+"&GEOMETRY=false&EGRID=" + grundstueck.getEgrid()).then(response -> {
             if (!response.ok) {

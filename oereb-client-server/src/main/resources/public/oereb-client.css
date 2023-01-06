@@ -3,16 +3,16 @@ body {
     padding: 0px;
     background: #FFFFFF; 
     
-    /*
+    
     font-smooth: auto;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    */
+    
 }
 
 body, div {
     /*font-family: Frutiger, 'Fira Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;*/   
-    font-family: 'Barlow Semi Condensed', sans-serif;   
+    font-family: 'Roboto Condensed', 'Barlow Semi Condensed', sans-serif;
     font-weight: 400;
 }
 
@@ -54,7 +54,7 @@ body, div {
 
 .field-group input, .field-group textarea {
     /*font-family: Frutiger, 'Fira Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;*/   
-    font-family: 'Barlow Semi Condensed', sans-serif;
+    font-family: 'Roboto Condensed', 'Barlow Semi Condensed', sans-serif;
     font-size: 16px;   
     font-weight: 400;     
 }
