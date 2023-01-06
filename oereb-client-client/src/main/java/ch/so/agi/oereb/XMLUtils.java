@@ -19,7 +19,7 @@ public class XMLUtils {
      * @param Element
      * @return
      */
-    public static List<Grundstueck> createGrundstuecke(Element root) {
+    public static List<Grundstueck> createGrundstuecke(Element root, String language) {
         List<Grundstueck> grundstueckeList = new ArrayList<Grundstueck>();
 
         NodeList childNodes = root.getChildNodes();
@@ -43,7 +43,7 @@ public class XMLUtils {
                 }
 
                 if (nodeName.contains("type")) {
-                    String art = XMLUtils.getLocalisedTextByLanguage(childElement, "de");
+                    String art = XMLUtils.getLocalisedTextByLanguage((Element)childElement.getElementsByTagName("Text").item(0), language);
                     grundstueck.setArt(art);
                 }
 
@@ -132,7 +132,7 @@ public class XMLUtils {
      */
     public static String getLocalisedTextByLanguage(Element element, String language) {
         List<Element> textElementList = new ArrayList<Element>();
-        XMLUtils.getElementsByPath(element, "Text/LocalisedText", textElementList);
+        XMLUtils.getElementsByPath(element, "LocalisedText", textElementList);
 
         String firstFoundText = null;
         
