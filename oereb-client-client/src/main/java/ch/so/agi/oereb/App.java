@@ -344,7 +344,7 @@ public class App implements EntryPoint {
 
         headerRow = div().id("result-header-row").element();
         HTMLElement resultParcelSpan = span().id("result-parcel-span")
-                .textContent(messages.result_header_real_estate(grundstueck.getNummer())).element();
+                .textContent(messages.result_header_real_estate(grundstueck.getNummer() /*+ " (" + grundstueck.getArt() + ")"*/)).element();
 
         HTMLElement resultButtonSpan = span().id("result-button-span").element();
         resultButtonSpan.appendChild(expandBtn.element());
