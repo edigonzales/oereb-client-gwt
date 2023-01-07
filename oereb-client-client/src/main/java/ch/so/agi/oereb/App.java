@@ -413,6 +413,7 @@ public class App implements EntryPoint {
             String localisedThemeName = XMLUtils.getLocalisedTextByLanguage(themeTextElement, LANGUAGE);
             
             String lawStatus = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "Lawstatus/Code");
+            console.log("lawStatus: " + lawStatus);
             
             List<Element> lawStatusTextElementList = new ArrayList<Element>();
             XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "Lawstatus/Text", lawStatusTextElementList);

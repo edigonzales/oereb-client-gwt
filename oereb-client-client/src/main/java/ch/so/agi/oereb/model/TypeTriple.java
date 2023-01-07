@@ -10,6 +10,7 @@ public class TypeTriple {
     public TypeTriple(String typeCode, String typeCodeList, String lawStatus) {
         this.typeCode = typeCode;
         this.typeCodeList = typeCodeList;
+        this.lawStatus = lawStatus;
     }
 
     public String getTypeCode() {
