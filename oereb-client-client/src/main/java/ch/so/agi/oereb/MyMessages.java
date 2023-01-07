@@ -29,6 +29,15 @@ public interface MyMessages extends Messages {
 
     @DefaultMessage("Request extract as PDF")
     String result_button_request_pdf();
+    
+    @DefaultMessage("Municipality")
+    String result_municipality();
+    
+    @DefaultMessage("Land register area")
+    String result_land_register_area();
+    
+    @DefaultMessage("Land register type")
+    String result_land_register_type();
 
     @DefaultMessage("Real estate nr {0}")
     String result_header_real_estate(String number);

@@ -22,6 +22,8 @@ import org.dominokit.domino.ui.chips.Chip;
 import org.dominokit.domino.ui.collapsible.Accordion;
 import org.dominokit.domino.ui.collapsible.AccordionPanel;
 import org.dominokit.domino.ui.dialogs.MessageDialog;
+import org.dominokit.domino.ui.grid.Column;
+import org.dominokit.domino.ui.grid.Row;
 import org.dominokit.domino.ui.icons.Icons;
 import org.dominokit.domino.ui.lists.ListGroup;
 import org.dominokit.domino.ui.style.Color;
@@ -118,7 +120,11 @@ public class App implements EntryPoint {
     // Format settings
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
     private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
+    private static final String SUB_HEADER_FONT_SIZE = "16px";
+    private static final String BODY_FONT_SIZE = "14px";
+    private static final String SMALL_FONT_SIZE = "12px";
 
+    
     // Browser url components
     private UrlComponents urlComponents;
 
@@ -651,6 +657,26 @@ public class App implements EntryPoint {
             div.appendChild(pdfBtn.element());
         }
 
+        {
+            Row row = Row.create();
+            row.style().cssText("padding-top:15px;");
+            row.appendChild(Column.span6().style().cssText("font-size:16px;font-weight:700;").get().setTextContent(messages.result_municipality()+":"));
+            row.appendChild(Column.span6().style().setFontSize(SUB_HEADER_FONT_SIZE).get().setTextContent(grundstueck.getMunicipalityName()));
+            div.appendChild(row.element());
+        }
+        {
+            Row row = Row.create();
+            row.style().cssText("padding-top:5px;");
+            row.appendChild(Column.span6().style().cssText("font-size:16px;font-weight:700;").get().setTextContent(messages.result_land_register_area()+":"));
+            row.appendChild(Column.span6().style().setFontSize(SUB_HEADER_FONT_SIZE).get().setTextContent(grundstueck.getMunicipalityName()));
+            div.appendChild(row.element());
+            
+//            share = fmtInteger.format(restriction.getAreaShare()) + " m<span class=\"sup\">2</span>";
+//            innerHtml(SafeHtmlUtils.fromTrustedString(share)
+
+        }        
+        
+        
         Accordion accordion = Accordion.create()
                 .setHeaderBackground(Color.GREY_LIGHTEN_3)
                 .style()
