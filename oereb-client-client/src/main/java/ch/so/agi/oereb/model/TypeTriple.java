@@ -1,12 +1,13 @@
 package ch.so.agi.oereb.model;
 
-public class TypeTuple {
+public class TypeTriple {
     private String typeCode;
     private String typeCodeList;
+    private String lawStatus;
 
-    public TypeTuple() {}
+    public TypeTriple() {}
     
-    public TypeTuple(String typeCode, String typeCodeList) {
+    public TypeTriple(String typeCode, String typeCodeList, String lawStatus) {
         this.typeCode = typeCode;
         this.typeCodeList = typeCodeList;
     }
@@ -27,12 +28,21 @@ public class TypeTuple {
         this.typeCodeList = typeCodeList;
     }
 
+    public String getLawStatus() {
+        return lawStatus;
+    }
+
+    public void setLawStatus(String lawStatus) {
+        this.lawStatus = lawStatus;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((typeCode == null) ? 0 : typeCode.hashCode());
         result = prime * result + ((typeCodeList == null) ? 0 : typeCodeList.hashCode());
+        result = prime * result + ((lawStatus == null) ? 0 : lawStatus.hashCode());
         return result;
     }
 
@@ -44,7 +54,7 @@ public class TypeTuple {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        TypeTuple other = (TypeTuple) obj;
+        TypeTriple other = (TypeTriple) obj;
         if (typeCode == null) {
             if (other.typeCode != null)
                 return false;
@@ -55,11 +65,16 @@ public class TypeTuple {
                 return false;
         } else if (!typeCodeList.equals(other.typeCodeList))
             return false;
+        if (lawStatus == null) {
+            if (other.lawStatus != null)
+                return false;
+        } else if (!lawStatus.equals(other.lawStatus))
+            return false;
         return true;
     }
 
     @Override
     public String toString() {
-        return "TypeTuple [typeCode=" + typeCode + ", typeCodeList=" + typeCodeList + "]";
+        return "TypeTriple [typeCode=" + typeCode + ", typeCodeList=" + typeCodeList + ", lawStatus=" + lawStatus + "]";
     }
 }

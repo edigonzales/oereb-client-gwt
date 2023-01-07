@@ -166,6 +166,86 @@ body, div {
     width: 30%;     
 }
 
+/* Damit die Farbe des Textes immer gleich ist und nicht aufgrund der Hintergrundfarbe
+ * automagisch ändert */
+.panel-title>a, .panel-title>small, .panel-title>.small, .panel-title>small>a, .panel-title>.small>a {
+    color: black !important;
+}
+
+
+div.panel.accordion-panel-theme {
+    margin-top: 20px !important;
+}
+
+div.accordion-panel-theme h4 {
+    padding-top: 6px !important;
+    padding-bottom: 6px !important;
+}
+
+.panel-body {
+    padding: 0px;
+}
+
+.panel-group {
+    margin-bottom: -1px !important;
+}
+
+.accordion-panel-header-element h4.panel-title {
+    display: inline-block; 
+    width: 80%;
+}
+
+.accordion-panel-header-chip {
+    display: inline-block;
+    width: 20%;
+    text-align: right;
+    color: black;
+}
+
+.accordion-panel-header-chip div.chip-value {
+    text-align:center;
+}
+
+.accordion-panel-theme {
+    border: 1px solid #e0e0e0;
+    margin: 0px 0px 0px 0px;
+} 
+
+.accordion-panel-theme h4 {
+    font-weight: 600;
+}
+
+.accordion-panel-theme ul {
+    margin-bottom: 0px !important; 
+} 
+
+.theme-list {    
+    border: 1px solid #e0e0e0;
+    margin: -1px -1px 0px -1px;
+}
+
+.general-information {
+    color: black;   
+}
+
+#accordion-concerned-theme h4 {
+    font-size: 13px;
+}
+
+.accordion-panel-concerned-theme {
+    border: 1px solid #e0e0e0;
+    margin: -1px -1px 0px -1px !important;  
+}
+
+div.accordion-panel-concerned-theme h4 {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+}
+
+.theme-content {
+    color: black;
+    padding: 10px 15px 10px 15px;
+}
 
 /*
 

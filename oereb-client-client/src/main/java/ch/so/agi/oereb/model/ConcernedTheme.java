@@ -16,13 +16,9 @@ public class ConcernedTheme {
     
     private ReferenceWMS referenceWMS;
     
-    private Map<TypeTuple, Restriction> restrictions = new HashMap<TypeTuple, Restriction>(); 
+    private Map<TypeTriple, Restriction> restrictions = new HashMap<TypeTriple, Restriction>(); 
         
-    private Set<Document> legalProvisions = new HashSet<>(); 
-    
-    private Set<Document> laws = new HashSet<>();
-    
-    private Set<Document> hints = new HashSet<>();
+    private Set<Document> documents = new HashSet<>(); 
     
     private List<Office> responsibleOffice = new ArrayList<>();
 
@@ -58,36 +54,20 @@ public class ConcernedTheme {
         this.referenceWMS = referenceWMS;
     }
 
-    public Map<TypeTuple, Restriction> getRestrictions() {
+    public Map<TypeTriple, Restriction> getRestrictions() {
         return restrictions;
     }
 
-    public void setRestrictions(Map<TypeTuple, Restriction> restrictions) {
+    public void setRestrictions(Map<TypeTriple, Restriction> restrictions) {
         this.restrictions = restrictions;
     }
 
-    public Set<Document> getLegalProvisions() {
-        return legalProvisions;
+    public Set<Document> getDocuments() {
+        return documents;
     }
 
-    public void setLegalProvisions(Set<Document> legalProvisions) {
-        this.legalProvisions = legalProvisions;
-    }
-
-    public Set<Document> getLaws() {
-        return laws;
-    }
-
-    public void setLaws(Set<Document> laws) {
-        this.laws = laws;
-    }
-
-    public Set<Document> getHints() {
-        return hints;
-    }
-
-    public void setHints(Set<Document> hints) {
-        this.hints = hints;
+    public void setDocuments(Set<Document> documents) {
+        this.documents = documents;
     }
 
     public List<Office> getResponsibleOffice() {

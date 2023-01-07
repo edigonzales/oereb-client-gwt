@@ -124,30 +124,5 @@ public class MainController {
         }
         
         return new ResponseEntity<String>(new String(), HttpStatus.BAD_REQUEST);
-    }
-    
-//    @RequestMapping(value = "/getegrid", method = RequestMethod.GET, produces = { "application/json" })
-//    public void getEgrid(@RequestParam(value = "EN", required = true) String coord) {
-//        log.info("EN: <{}>", coord);
-//
-//        String cantonServiceUrl = settings.getCantonServiceUrl();
-//        String requestUrl = cantonServiceUrl + coord;
-//        log.info(requestUrl);
-//        
-//        RestTemplate restTemplate = new RestTemplate();
-//        ResponseEntity<String> response = restTemplate.getForEntity(requestUrl, String.class);
-//        log.info(response.getBody());
-//
-//        if (response.getStatusCode().is2xxSuccessful()) {
-//            try {
-//                JsonNode root = mapper.readTree(response.getBody());
-//                log.info("***"+root.get("results").get(0).get("properties").get("ak").asText());
-//                String canton = root.get("results").get("properties").get("ak").asText();
-//                log.info(canton);
-//            } catch (JsonProcessingException e) {
-//                e.printStackTrace();
-//                // return...
-//            }
-//        }
-    
+    }    
 }

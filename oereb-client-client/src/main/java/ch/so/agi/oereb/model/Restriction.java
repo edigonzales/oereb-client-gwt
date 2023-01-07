@@ -1,7 +1,7 @@
 package ch.so.agi.oereb.model;
 
 public class Restriction {
-    private String information;
+    private String legendText;
     
     private String symbol;
     
@@ -24,13 +24,17 @@ public class Restriction {
     private String multiLineStringGeometry;
     
     private String multiPointGeometry;
+    
+    private String lawStatus;
+    
+    private String lawStatusText;
 
-    public String getInformation() {
-        return information;
+    public String getLegendText() {
+        return legendText;
     }
 
-    public void setInformation(String information) {
-        this.information = information;
+    public void setLegendText(String legendText) {
+        this.legendText = legendText;
     }
 
     public String getSymbol() {
@@ -135,5 +139,21 @@ public class Restriction {
 
     public void setMultiPointGeometry(String multiPointGeometry) {
         this.multiPointGeometry = multiPointGeometry;
+    }
+
+    public String getLawStatus() {
+        return lawStatus;
+    }
+
+    public void setLawStatus(String lawStatus) {
+        this.lawStatus = lawStatus;
+    }
+
+    public String getLawStatusText() {
+        return lawStatusText;
+    }
+
+    public void setLawStatusText(String lawStatusText) {
+        this.lawStatusText = lawStatusText;
     }
 }

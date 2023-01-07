@@ -33,7 +33,16 @@ public interface MyMessages extends Messages {
     @DefaultMessage("Real estate nr {0}")
     String result_header_real_estate(String number);
     
+    @DefaultMessage("Concerned themes")
+    String result_theme_concerned_themes();
     
+    @DefaultMessage("Not concerned themes")
+    String result_theme_not_concerned_themes();
+
+    @DefaultMessage("Themes without data")
+    String result_theme_theme_without_data();
+
+        
     @DefaultMessage("Fubar")
     String fubar();
     

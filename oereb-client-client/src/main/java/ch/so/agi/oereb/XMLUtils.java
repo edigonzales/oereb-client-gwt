@@ -141,7 +141,7 @@ public class XMLUtils {
             
             String code = XMLUtils.getElementValueByPath(el, "Language");
             String text = XMLUtils.getElementValueByPath(el, "Text");
-                        
+            
             if (firstFoundText == null) {
                 firstFoundText = text;
             }

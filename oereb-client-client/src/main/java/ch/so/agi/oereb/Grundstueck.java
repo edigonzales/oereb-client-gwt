@@ -7,6 +7,10 @@ public class Grundstueck {
     private String art;
     private String canton;
     private ol.geom.Geometry geometrie;
+    private String municipalityName;
+    private String subunitOfLandRegister;
+    private String subunitOfLandRegisterDesignation;
+    private int landRegistryArea;
     
     public String getNummer() {
         return nummer;
@@ -43,5 +47,29 @@ public class Grundstueck {
     }
     public void setGeometrie(ol.geom.Geometry geometrie) {
         this.geometrie = geometrie;
+    }
+    public String getMunicipalityName() {
+        return municipalityName;
+    }
+    public void setMunicipalityName(String municipalityName) {
+        this.municipalityName = municipalityName;
+    }
+    public String getSubunitOfLandRegister() {
+        return subunitOfLandRegister;
+    }
+    public void setSubunitOfLandRegister(String subunitOfLandRegister) {
+        this.subunitOfLandRegister = subunitOfLandRegister;
+    }
+    public String getSubunitOfLandRegisterDesignation() {
+        return subunitOfLandRegisterDesignation;
+    }
+    public void setSubunitOfLandRegisterDesignation(String subunitOfLandRegisterDesignation) {
+        this.subunitOfLandRegisterDesignation = subunitOfLandRegisterDesignation;
+    }
+    public int getLandRegistryArea() {
+        return landRegistryArea;
+    }
+    public void setLandRegistryArea(int landRegistryArea) {
+        this.landRegistryArea = landRegistryArea;
     }
 }
