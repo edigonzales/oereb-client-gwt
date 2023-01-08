@@ -8,30 +8,35 @@ import static org.dominokit.domino.ui.style.Unit.px;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.dominokit.domino.ui.button.Button;
 import org.dominokit.domino.ui.button.ButtonSize;
 import org.dominokit.domino.ui.chips.Chip;
 import org.dominokit.domino.ui.collapsible.Accordion;
 import org.dominokit.domino.ui.collapsible.AccordionPanel;
+import org.dominokit.domino.ui.collapsible.Collapsible.HideCompletedHandler;
+import org.dominokit.domino.ui.collapsible.Collapsible.ShowCompletedHandler;
 import org.dominokit.domino.ui.dialogs.MessageDialog;
 import org.dominokit.domino.ui.grid.Column;
 import org.dominokit.domino.ui.grid.Row;
+import org.dominokit.domino.ui.grid.flex.FlexItem;
+import org.dominokit.domino.ui.grid.flex.FlexLayout;
 import org.dominokit.domino.ui.icons.Icons;
 import org.dominokit.domino.ui.lists.ListGroup;
+import org.dominokit.domino.ui.sliders.Slider;
 import org.dominokit.domino.ui.style.Color;
 import org.dominokit.domino.ui.style.ColorScheme;
 import org.dominokit.domino.ui.style.StyleType;
 import org.dominokit.domino.ui.style.Styles;
 import org.dominokit.domino.ui.themes.Theme;
 import org.dominokit.domino.ui.utils.DominoElement;
+import org.dominokit.domino.ui.utils.TextNode;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;
@@ -52,8 +57,6 @@ import ch.so.agi.oereb.model.Office;
 import ch.so.agi.oereb.model.ReferenceWMS;
 import ch.so.agi.oereb.model.Restriction;
 import ch.so.agi.oereb.model.TypeTriple;
-
-import com.google.gwt.i18n.client.DateTimeFormat;
 
 import elemental2.core.Global;
 import elemental2.core.JsArray;
@@ -83,21 +86,15 @@ import ol.Overlay;
 import ol.OverlayOptions;
 import ol.View;
 import ol.Feature;
-import ol.interaction.Select;
-import ol.interaction.SelectOptions;
 import ol.layer.Base;
 import ol.layer.Image;
-import ol.layer.Layer;
 import ol.layer.LayerOptions;
 import ol.layer.VectorLayerOptions;
-import ol.proj.Projection;
-import ol.proj.ProjectionOptions;
 import ol.source.ImageWms;
 import ol.source.ImageWmsOptions;
 import ol.source.ImageWmsParams;
 import ol.source.Vector;
 import ol.source.VectorOptions;
-import ol.style.Fill;
 import ol.style.Stroke;
 import ol.style.Style;
 
@@ -113,9 +110,6 @@ public class App implements EntryPoint {
     private List<String> NOT_SUPPORTED_CANTONS;
     private String RESULT_CARD_HEIGHT = "calc(100% - 215px)";
     private String LANGUAGE = "de";
-
-    // Not supported cantons
-//    private List<String> notSupportedCantons = new ArrayList<>(Arrays.asList("GE", "LU", "SZ", "VD", "VS", "LI"));
 
     // Format settings
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
@@ -147,6 +141,12 @@ public class App implements EntryPoint {
     private LinkedList<String> notConcernedThemes;
     private LinkedList<String> themesWithoutData;
     private ArrayList<String> oerebWmsLayers = new ArrayList<String>();
+
+    private Accordion innerAccordion;
+    private boolean oerebAccordionPanelConcernedThemeState = false;
+    private boolean oerebAccordionPanelNotConcernedThemeState = false;
+    private boolean oerebAccordionPanelThemesWithoutDataState = false;
+    private boolean oerebAccordionPanelGeneralInformationState = false;
 
     public void onModuleLoad() {
         // Change Domino UI color scheme.
@@ -214,7 +214,7 @@ public class App implements EntryPoint {
         // Event wird in via textueller Suche (Search box) dispatched.
         body().element().addEventListener("location_found", new EventListener() {
             @Override
-            public void handleEvent(Event evt) {
+            public void handleEvent(Event evt) {                
                 CustomEvent customEvent = ((CustomEvent) evt);
                 SearchResult searchResult = (SearchResult) customEvent.detail;
                 getEgrid(searchResult, true);
@@ -287,7 +287,7 @@ public class App implements EntryPoint {
                 grundstueck.setCanton(searchResult.getCanton());
                 getExtract(grundstueck);
             }
-
+            
             return null;
         }).catch_(error -> {
             console.log(error);
@@ -295,9 +295,8 @@ public class App implements EntryPoint {
         });
     }
 
-    private void getExtract(Grundstueck grundstueck) {
-        console.log("get extract");
-        console.log(grundstueck.getCanton());
+    private void getExtract(Grundstueck grundstueck) {        
+        updateUrlLocation(grundstueck.getEgrid());
       
         Extent extent = grundstueck.getGeometrie().getExtent();
         View view = map.getView();
@@ -344,7 +343,7 @@ public class App implements EntryPoint {
 
         headerRow = div().id("result-header-row").element();
         HTMLElement resultParcelSpan = span().id("result-parcel-span")
-                .textContent(messages.result_header_real_estate(grundstueck.getNummer() /*+ " (" + grundstueck.getArt() + ")"*/)).element();
+                .textContent(messages.result_header_real_estate(grundstueck.getNummer() + " (" + grundstueck.getEgrid()) + ")").element();
 
         HTMLElement resultButtonSpan = span().id("result-button-span").element();
         resultButtonSpan.appendChild(expandBtn.element());
@@ -367,11 +366,8 @@ public class App implements EntryPoint {
                     }
                     return response.text();
                 }).then(xml -> {
-                    // console.log(xml);
                     parseResponse(xml, grundstueck);
                     renderResponse(grundstueck);
-
-
                     return null;
                 }).catch_(error -> {
                     console.log(error);
@@ -385,6 +381,7 @@ public class App implements EntryPoint {
         
         // Real estate information
         grundstueck.setMunicipalityName(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/MunicipalityName"));
+        grundstueck.setMunicipalityNumber(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/MunicipalityCode"));
         grundstueck.setSubunitOfLandRegister(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/SubunitOfLandRegister"));
         grundstueck.setSubunitOfLandRegisterDesignation(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/SubunitOfLandRegisterDesignation"));
         grundstueck.setLandRegistryArea(Integer.valueOf(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/LandRegistryArea")));
@@ -413,7 +410,6 @@ public class App implements EntryPoint {
             String localisedThemeName = XMLUtils.getLocalisedTextByLanguage(themeTextElement, LANGUAGE);
             
             String lawStatus = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "Lawstatus/Code");
-            console.log("lawStatus: " + lawStatus);
             
             List<Element> lawStatusTextElementList = new ArrayList<Element>();
             XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "Lawstatus/Text", lawStatusTextElementList);
@@ -435,11 +431,12 @@ public class App implements EntryPoint {
 
                 // TODO: 
                 // - port 
+                // - styles
                 List<Element> referenceWmsList = new ArrayList<Element>();
                 XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "Map/ReferenceWMS", referenceWmsList);
                 String localisedReferenceWmsText = XMLUtils.getLocalisedTextByLanguage(referenceWmsList.get(0), LANGUAGE);
 
-                URL wmsUrl = new URL(localisedReferenceWmsText);                
+                URL wmsUrl = new URL(fixUrl(localisedReferenceWmsText));                
                 String host = wmsUrl.host;
                 String protocol = wmsUrl.protocol;
                 String pathname = wmsUrl.pathname;
@@ -462,6 +459,12 @@ public class App implements EntryPoint {
                         imageFormat = value;
                     } else if (key.equalsIgnoreCase("TRANSPARENT")) {
                         transparent = value;
+                    } else if (key.equalsIgnoreCase("STYLES")) {
+                        
+                        // in createOerebWmsLayer set(..,..) Styles setzen.
+                        // styles property in pojo
+                        
+                        // TODO
                     } else if (key.equalsIgnoreCase("SERVICE") || key.equalsIgnoreCase("REQUEST")
                             || key.equalsIgnoreCase("VERSION") || key.equalsIgnoreCase("BBOX")
                             || key.equalsIgnoreCase("WIDTH") || key.equalsIgnoreCase("HEIGHT")
@@ -482,10 +485,7 @@ public class App implements EntryPoint {
                 }
                                 
                 String baseUrl = protocol + "//" + host + pathname + searchParamsString;
-                
-                // TODO: Testen mit BE wegen map-Parameter und Transparent-Parameter. 
-                // ReferenceWMS hat params-Property.
-               
+                               
                 ReferenceWMS referenceWMS = new ReferenceWMS();
                 referenceWMS.setBaseUrl(baseUrl);
                 referenceWMS.setImageFormat(imageFormat);
@@ -496,19 +496,22 @@ public class App implements EntryPoint {
 
                 // ResponsibleOffice
                 List<Element> officeList = new ArrayList<Element>();
-                XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "ResponsibleOffice", officeList);
+                XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "ResponsibleOffice", officeList);                
                 for (Element officeElement : officeList) {
+                    Office office = new Office();
+
                     List<Element> officeNameList = new ArrayList<Element>();
                     XMLUtils.getElementsByPath(officeElement, "Name", officeNameList);
                     String localisedOfficeNameText = XMLUtils.getLocalisedTextByLanguage(officeNameList.get(0), LANGUAGE);
-                    
-                    List<Element> officeAtWebList = new ArrayList<Element>();
-                    XMLUtils.getElementsByPath(officeElement, "OfficeAtWeb", officeAtWebList);
-                    String localisedOfficeAtWebText = XMLUtils.getLocalisedTextByLanguage(officeAtWebList.get(0), LANGUAGE);
-
-                    Office office = new Office();
                     office.setName(localisedOfficeNameText);
-                    office.setOfficeAtWeb(localisedOfficeAtWebText);
+
+                    List<Element> officeAtWebElementList = new ArrayList<Element>();
+                    XMLUtils.getElementsByPath(officeElement, "OfficeAtWeb", officeAtWebElementList);
+                    if (officeAtWebElementList.size() > 0) {
+                        String localisedOfficeAtWebText = XMLUtils.getLocalisedTextByLanguage(officeAtWebElementList.get(0), LANGUAGE);
+                        office.setOfficeAtWeb(localisedOfficeAtWebText);
+                    }
+
                     theme.getResponsibleOffice().add(office);
                 }
                 concernedThemesMap.put(localisedThemeName, theme);
@@ -568,7 +571,6 @@ public class App implements EntryPoint {
                 }
                 theme.getRestrictions().put(typeTriple, restriction);
 
-                List<Document> documentList = new ArrayList<>();
                 List<Element> legalProvisionsList = new ArrayList<Element>();
                 XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "LegalProvisions", legalProvisionsList);
                 for (Element legalProvisionsElement : legalProvisionsList) {                    
@@ -586,10 +588,26 @@ public class App implements EntryPoint {
                     String localisedTitleText = XMLUtils.getLocalisedTextByLanguage(titleElementList.get(0), LANGUAGE);
                     document.setTitle(localisedTitleText);
 
+                    List<Element> officialNumberElementList = new ArrayList<Element>();
+                    XMLUtils.getElementsByPath(legalProvisionsElement, "OfficialNumber", officialNumberElementList);
+                    if (officialNumberElementList.size() > 0) {
+                        String localisedOfficialNumberText = XMLUtils.getLocalisedTextByLanguage(officialNumberElementList.get(0), LANGUAGE);
+                        document.setOfficialNumber(localisedOfficialNumberText);
+                    }
+                    
+                    List<Element> abbreviationElementList = new ArrayList<Element>();
+                    XMLUtils.getElementsByPath(legalProvisionsElement, "Abbreviation", abbreviationElementList);
+                    if (abbreviationElementList.size() > 0) {
+                        String localisedAbbreviationText = XMLUtils.getLocalisedTextByLanguage(abbreviationElementList.get(0), LANGUAGE);
+                        document.setAbbreviation(localisedAbbreviationText);
+                    }
+
                     List<Element> textAtWebElementList = new ArrayList<Element>();
                     XMLUtils.getElementsByPath(legalProvisionsElement, "TextAtWeb", textAtWebElementList);
-                    String localisedTextAtWebText = XMLUtils.getLocalisedTextByLanguage(textAtWebElementList.get(0), LANGUAGE);
-                    document.setTextAtWeb(localisedTextAtWebText);
+                    if (textAtWebElementList.size() > 0) {
+                        String localisedTextAtWebText = XMLUtils.getLocalisedTextByLanguage(textAtWebElementList.get(0), LANGUAGE);
+                        document.setTextAtWeb(localisedTextAtWebText);
+                    }
 
                     document.setLawStatus(XMLUtils.getElementValueByPath(legalProvisionsElement, "Lawstatus/Code"));
 
@@ -598,14 +616,20 @@ public class App implements EntryPoint {
                     String lawStatusDocumentText = XMLUtils.getLocalisedTextByLanguage(lawStatusTextElementDocumentList.get(0), LANGUAGE);
                     document.setLawStatusText(lawStatusDocumentText);
 
-                    document.setIdx(Integer.valueOf(XMLUtils.getElementValueByPath(legalProvisionsElement, "Index")));
-                    
-                    documentList.add(document);
+                    // TEMPORARY
+                    // Kanton AG hat None.
+                    try {
+                        document.setIdx(Integer.valueOf(XMLUtils.getElementValueByPath(legalProvisionsElement, "Index")));
+                    } catch (NumberFormatException e) {
+                        document.setIdx(1);
+                    }
+                                        
+                    theme.getDocuments().add(document);
                 }
             }
         }
 
-        // Test: Stimmt die Sortierung mit .values()?
+        // TODO: Test: Stimmt die Sortierung mit .values()?
         concernedThemes = new LinkedList<ConcernedTheme>(concernedThemesMap.values());
 
         
@@ -628,7 +652,6 @@ public class App implements EntryPoint {
             List<Element> themeWithoutDataTextList = new ArrayList<Element>();
             XMLUtils.getElementsByPath(element, "Text", themeWithoutDataTextList);
             String localisedThemeText = XMLUtils.getLocalisedTextByLanguage(themeWithoutDataTextList.get(0), LANGUAGE);
-            console.log(localisedThemeText);
             themesWithoutData.add(localisedThemeText);
         }
     }
@@ -661,22 +684,34 @@ public class App implements EntryPoint {
         {
             Row row = Row.create();
             row.style().cssText("padding-top:15px;");
-            row.appendChild(Column.span6().style().cssText("font-size:16px;font-weight:700;").get().setTextContent(messages.result_municipality()+":"));
-            row.appendChild(Column.span6().style().setFontSize(SUB_HEADER_FONT_SIZE).get().setTextContent(grundstueck.getMunicipalityName()));
+            row.appendChild(Column.span6().css("result-real-estate-info-title").setTextContent(messages.result_municipality()+":"));
+            row.appendChild(Column.span6().css("result-real-estate-info-text").setTextContent(grundstueck.getMunicipalityName() + " ("+ grundstueck.getMunicipalityNumber() + ")"));
             div.appendChild(row.element());
         }
         {
+            if (grundstueck.getSubunitOfLandRegister() != null) {
+                Row row = Row.create();
+                row.style().cssText("padding-top:5px;");
+                row.appendChild(Column.span6().css("result-real-estate-info-title").setTextContent(grundstueck.getSubunitOfLandRegisterDesignation()+":"));
+                row.appendChild(Column.span6().css("result-real-estate-info-text").setTextContent(grundstueck.getSubunitOfLandRegister()));
+                div.appendChild(row.element());
+            }
+        }        
+        {
             Row row = Row.create();
             row.style().cssText("padding-top:5px;");
-            row.appendChild(Column.span6().style().cssText("font-size:16px;font-weight:700;").get().setTextContent(messages.result_land_register_area()+":"));
-            row.appendChild(Column.span6().style().setFontSize(SUB_HEADER_FONT_SIZE).get().setTextContent(grundstueck.getMunicipalityName()));
+            row.appendChild(Column.span6().css("result-real-estate-info-title").setTextContent(messages.result_land_register_area()+":"));
+            String area = fmtDefault.format(grundstueck.getLandRegistryArea()) + " m<span class=\"sup\">2</span>";
+            row.appendChild(Column.span6().css("result-real-estate-info-text").appendChild(span().innerHtml(SafeHtmlUtils.fromTrustedString(area))));
             div.appendChild(row.element());
-            
-//            share = fmtInteger.format(restriction.getAreaShare()) + " m<span class=\"sup\">2</span>";
-//            innerHtml(SafeHtmlUtils.fromTrustedString(share)
-
         }        
-        
+        {
+            Row row = Row.create();
+            row.style().cssText("padding-top:5px;");
+            row.appendChild(Column.span6().css("result-real-estate-info-title").setTextContent(messages.result_land_register_type()+":"));
+            row.appendChild(Column.span6().css("result-real-estate-info-text").setTextContent(grundstueck.getArt()));
+            div.appendChild(row.element());
+        }
         
         Accordion accordion = Accordion.create()
                 .setHeaderBackground(Color.GREY_LIGHTEN_3)
@@ -686,6 +721,7 @@ public class App implements EntryPoint {
         
         div.appendChild(accordion.element());
 
+        // Concerned themes
         {
             AccordionPanel accordionPanel = AccordionPanel.create(messages.result_theme_concerned_themes());
             accordionPanel.elevate(0);
@@ -703,20 +739,264 @@ public class App implements EntryPoint {
             
             accordion.appendChild(accordionPanel);
 
-        }
-        
-        
-        
-//        for (ConcernedTheme theme : concernedThemes) {
-//            Image wmsLayer = createOerebWmsLayer(theme.getReferenceWMS());
-//            map.addLayer(wmsLayer);
-//            
-//            String layerId = theme.getReferenceWMS().getLayers();
-//            oerebWmsLayers.add(layerId);                    
+            // TODO / FIXME
+            // Event listener nur auf dem Header Element. Ansonsten schliesst es sich 
+            // auch wenn ich auf einen Sub-Panel klicke.
+//            oerebAccordionPanelConcernedTheme.getHeaderElement().addEventListener(EventType.click, new EventListener() {
+//                @Override
+//                public void handleEvent(Event evt) {                    
+//                    if (!oerebAccordionPanelConcernedThemeState) {
+//                        oerebAccordionPanelConcernedTheme.show();
+//                        oerebAccordionPanelConcernedThemeState = true;
+//                        oerebAccordionPanelNotConcernedThemeState = false;
+//                        oerebAccordionPanelThemesWithoutDataState = false;
+//                        oerebAccordionPanelGeneralInformationState = false;
+//                        List<AccordionPanel> panels = oerebAccordion.getPanels();
+//                        for (AccordionPanel panel : panels) {
+//                            if(!panel.equals(oerebAccordionPanelConcernedTheme)) {
+//                                panel.hide();
+//                            }
+//                        }                          
+//                    } else {
+//                        oerebAccordionPanelConcernedTheme.hide();
+//                        oerebAccordionPanelConcernedThemeState = false;
+//                    }            
+//                }
+//            });  
+            
+            innerAccordion = Accordion.create()
+                    .setId("accordion-concerned-theme")
+                    .setHeaderBackground(Color.GREY_LIGHTEN_4);
+
+            for (ConcernedTheme theme : concernedThemes) {
+                Image wmsLayer = createOerebWmsLayer(theme.getReferenceWMS());
+                map.addLayer(wmsLayer);
+
+                String layerId = theme.getReferenceWMS().getLayers();
+                oerebWmsLayers.add(layerId);                    
+
+                // TODO brauche ich das?
+//                innerOerebPanelStateMap.put(layerId, false);
+                
+                AccordionPanel themeAccordionPanel = AccordionPanel.create(theme.getName()).css("accordion-panel-concerned-theme");
+                themeAccordionPanel.elevate(0);
+                themeAccordionPanel.setId(layerId);
+                
+                themeAccordionPanel.addShowListener(new ShowCompletedHandler() {
+                    @Override
+                    public void onShown() {
+                        Image wmsLayer = (Image) getMapLayerById(layerId);
+                        wmsLayer.setVisible(true); 
+                    } 
+                });
+                
+                themeAccordionPanel.addHideListener(new HideCompletedHandler() {
+                    @Override
+                    public void onHidden() {
+                        Image wmsLayer = (Image) getMapLayerById(layerId);
+                        wmsLayer.setVisible(false);
+                        // TODO
+                        //innerOerebPanelStateMap.put(accordionPanel.getId(), false);
+                    } 
+                });
+                
+                // ?? Text? Code ist sinnvoll, Begründung mir jetzt noch unklar.
+                // Damit wird der Click Event nicht in das Tab Panel weitergereicht.
+                // Und somit wird nicht unnötiger Code ausgeführt.
+//                accordionPanel.getHeaderElement().addEventListener(EventType.click, new EventListener() {
+//                    @Override
+//                    public void handleEvent(Event evt) {
+//                        //console.log("vorher: " + accordionPanel.getId() + " " + innerOerebPanelStateMap.get(accordionPanel.getId()));
+//                        if (innerOerebPanelStateMap.get(accordionPanel.getId())) {
+//                            innerOerebPanelStateMap.put(accordionPanel.getId(), false);
+//                            accordionPanel.hide();
+//                        } else {
+//                            innerOerebPanelStateMap.put(accordionPanel.getId(), true);
+//                            accordionPanel.show();
+//                        }
+//                        //console.log("nachher: " + accordionPanel.getId() + " " + innerOerebPanelStateMap.get(accordionPanel.getId()));
 //
-//
-//        }
-        
+//                        evt.stopPropagation();
+//                    }
+//                });
+
+                // Create a div element for the content.
+                HTMLDivElement contentDiv = div().css("theme-content").element();
+
+                // Slider
+                int opacity = Double.valueOf((theme.getReferenceWMS().getLayerOpacity() * 100)).intValue();;
+                Slider slider = Slider.create(100).setMinValue(0).setValue(opacity).withoutThumb();
+                slider.addChangeHandler(handler -> {
+                    wmsLayer.setOpacity(handler.intValue() / 100.0);
+                });
+                                        
+                FlexLayout sliderRow = FlexLayout.create();
+                sliderRow.appendChild(FlexItem.create().setFlexGrow(0).style().setPaddingRight("20px").get().appendChild(span().textContent(messages.result_wms_opacity()).element()));
+                sliderRow.appendChild(FlexItem.create().setFlexGrow(1).appendChild(slider.element()));
+                contentDiv.appendChild(sliderRow.element());
+                
+                contentDiv.appendChild(div().css("fake-column").element());
+                contentDiv.appendChild(div().css(Styles.padding_10).element());
+
+                // Eigentumsbeschränkungen
+                Row restrictionHeaderRow = Row.create();
+                restrictionHeaderRow.appendChild(Column.span6().style().setFontSize(SMALL_FONT_SIZE).get().setTextContent(messages.result_type_name()));
+                restrictionHeaderRow.appendChild(Column.span1().style().setFontSize(SMALL_FONT_SIZE).get().setTextContent(""));
+                restrictionHeaderRow.appendChild(Column.span3().style().setFontSize(SMALL_FONT_SIZE).setTextAlign("right").get().setTextContent(messages.result_share_name()));
+                restrictionHeaderRow.appendChild(Column.span2().style().setFontSize(SMALL_FONT_SIZE).setTextAlign("right").get().setTextContent(messages.result_share_in_percent_name()));
+                contentDiv.appendChild(restrictionHeaderRow.element());
+
+                for (java.util.Map.Entry<TypeTriple, Restriction> entry : theme.getRestrictions().entrySet()) {
+                    Restriction restriction = entry.getValue();
+                    
+                    if (restriction.getAreaShare() != null) {
+                        contentDiv.appendChild(processRestrictionRow(restriction, GeometryType.POLYGON));
+                    }
+
+                    if (restriction.getLengthShare() != null) {
+                        contentDiv.appendChild(processRestrictionRow(restriction, GeometryType.LINE));
+                    }
+
+                    if (restriction.getNrOfPoints() != null) {
+                        contentDiv.appendChild(processRestrictionRow(restriction, GeometryType.POINT));
+                    }
+                }
+
+                contentDiv.appendChild(div().css("fake-column").element());
+                contentDiv.appendChild(div().css(Styles.padding_10).element());
+                
+                // Rechtsvorschriften
+                {
+                    contentDiv.appendChild(div().css("font-semi-bold").textContent(messages.result_documents_legal_provisions()).element());
+                    
+                    LinkedList<Document> documents = theme.getDocuments().stream()
+                        .filter(d -> d.getType().equalsIgnoreCase("LegalProvision"))
+                        .sorted(Comparator.comparingInt(Document::getIdx))
+                        .collect(Collectors.toCollection(LinkedList::new));
+                    
+                    for (Document document : documents) {
+                        String title = document.getTitle();
+                        String number = document.getOfficialNumber();
+                        String abbrevation = document.getAbbreviation();
+                        String textAtWeb = document.getTextAtWeb();
+                        
+                        String linkName = title;
+                        if (number != null) {
+                            linkName += ", " + number;
+                        }
+                        
+                        if (textAtWeb != null) {
+                            HTMLElement link = a().css("result-link")
+                                    .attr("href", textAtWeb)
+                                    .attr("target", "_blank")
+                                    .add(TextNode.of(linkName)).element();
+                            contentDiv.appendChild(div().add(link).element());
+                        } else  {
+                            contentDiv.appendChild(div().add(linkName).element());
+                        }     
+                    }
+                }
+                
+                // Gesetzliche Grundlagen
+                {
+                    contentDiv.appendChild(div().css(Styles.padding_5).element());                    
+                    contentDiv.appendChild(div().css("font-semi-bold").textContent(messages.result_documents_laws()).element());
+                    
+                    LinkedList<Document> documents = theme.getDocuments().stream()
+                            .filter(d -> d.getType().equalsIgnoreCase("Law"))
+                            .sorted(Comparator.comparingInt(Document::getIdx))
+                            .collect(Collectors.toCollection(LinkedList::new));
+                        
+                        for (Document document : documents) {
+                            String title = document.getTitle();
+                            String number = document.getOfficialNumber();
+                            String abbreviation = document.getAbbreviation();
+                            String textAtWeb = document.getTextAtWeb();
+                            
+                            String linkName = title;
+                            if (abbreviation != null) {
+                                linkName += " (" + abbreviation + ")";
+                            }
+                            if (number != null) {
+                                linkName += ", " + number;
+                            }
+                            
+                            if (textAtWeb != null) {
+                                HTMLElement link = a().css("result-link")
+                                        .attr("href", textAtWeb)
+                                        .attr("target", "_blank")
+                                        .add(TextNode.of(linkName)).element();
+                                contentDiv.appendChild(div().add(link).element());
+                            } else  {
+                                contentDiv.appendChild(div().add(linkName).element());
+                            }     
+                        }
+                }
+                
+                // Hinweise
+                {
+                    LinkedList<Document> documents = theme.getDocuments().stream()
+                            .filter(d -> d.getType().equalsIgnoreCase("Hint"))
+                            .sorted(Comparator.comparingInt(Document::getIdx))
+                            .collect(Collectors.toCollection(LinkedList::new));
+                    
+                    if (documents.size() > 0) {
+                        contentDiv.appendChild(div().css(Styles.padding_5).element());                    
+                        contentDiv.appendChild(div().css("font-semi-bold").textContent(messages.result_documents_laws()).element());
+                        
+                        for (Document document : documents) {
+                            String title = document.getTitle();
+                            String number = document.getOfficialNumber();
+                            String abbreviation = document.getAbbreviation();
+                            String textAtWeb = document.getTextAtWeb();
+                            
+                            String linkName = title;
+                            if (abbreviation != null) {
+                                linkName += " (" + abbreviation + ")";
+                            }
+                            if (number != null) {
+                                linkName += ", " + number;
+                            }
+                            
+                            if (textAtWeb != null) {
+                                HTMLElement link = a().css("result-link")
+                                        .attr("href", textAtWeb)
+                                        .attr("target", "_blank")
+                                        .add(TextNode.of(linkName)).element();
+                                contentDiv.appendChild(div().add(link).element());
+                            } else  {
+                                contentDiv.appendChild(div().add(linkName).element());
+                            }     
+                        }
+                    }
+                }
+
+                contentDiv.appendChild(div().css("fake-column").element());
+                contentDiv.appendChild(div().css(Styles.padding_10).element());
+
+                // Zuständige Stelle(n)
+                contentDiv.appendChild(div().css("font-semi-bold").textContent(messages.result_responsible_offices()).element());
+
+                for (Office office : theme.getResponsibleOffice()) {
+                    String textAtWeb = office.getOfficeAtWeb();
+                    
+                    if (textAtWeb != null) {
+                        HTMLElement link = a().css("result-link")
+                                .attr("href", textAtWeb)
+                                .attr("target", "_blank")
+                                .add(TextNode.of(office.getName())).element();
+                        contentDiv.appendChild(div().add(link).element());
+                    } else  {
+                        contentDiv.appendChild(div().add(office.getName()).element());
+                    }     
+                    contentDiv.appendChild(div().css(Styles.padding_5).element());
+                }
+
+                themeAccordionPanel.setContent(contentDiv);
+                innerAccordion.appendChild(themeAccordionPanel);
+            }
+            accordionPanel.appendChild(innerAccordion);
+        }        
         
         {
             AccordionPanel accordionPanel = AccordionPanel.create(messages.result_theme_not_concerned_themes());
@@ -828,6 +1108,60 @@ public class App implements EntryPoint {
         resultCard.style.overflow = "auto";
         resultCard.style.visibility = "visible";
     }
+    
+    private HTMLElement processRestrictionRow(Restriction restriction, GeometryType type) {
+        Row row = Row.create().css("restriction-row");
+        
+        row.appendChild(Column.span6().setTooltip(restriction.getLegendText()).style().cssText("overflow:hidden; white-space:nowrap; text-overflow: ellipsis;").get().setTextContent(restriction.getLegendText()));
+        
+        String srcAttr = fixUrl(restriction.getSymbolRef());        
+        HTMLElement symbol = img().attr("src", srcAttr)
+                .attr("alt", "Symbol " + restriction.getLegendText())
+                .attr("width", "30px")
+                .style("border: 0px solid black").element();
+
+        row.appendChild(Column.span1().appendChild(symbol));
+
+        if (type == GeometryType.POLYGON) {
+            Column col = Column.span3().style().setTextAlign("right").get();
+            if (restriction.getAreaShare() < 0.1) {
+                col.appendChild(span().innerHtml(SafeHtmlUtils.fromTrustedString("< 0.1 m<span class=\"sup\">2</span>")));
+            } else {
+                col.appendChild(span().innerHtml(SafeHtmlUtils.fromTrustedString(fmtDefault.format(restriction.getAreaShare()) + " m<span class=\"sup\">2</span>")));
+            }
+            row.appendChild(col);
+        }
+
+        if (type == GeometryType.POLYGON && restriction.getPartInPercent() != null) {
+            Column col = Column.span2().style().setTextAlign("right").get();
+            if (restriction.getPartInPercent() < 0.1) {
+                col.appendChild(span().textContent("< 0.1"));
+            } else {
+                col.appendChild(span().textContent(fmtPercent.format(restriction.getPartInPercent())));
+            }
+            row.appendChild(col);
+        }
+
+        if (type == GeometryType.LINE) {
+            Column col = Column.span3().style().setTextAlign("right").get();            
+            if (restriction.getLengthShare() < 0.1) {
+                col.appendChild(span().textContent("< 0.1 m"));
+            } else {
+                col.appendChild(span().textContent(fmtDefault.format(restriction.getLengthShare()) + " m"));
+
+            }
+            row.appendChild(col);            
+        }
+
+        if (type == GeometryType.POINT) {
+            Column col = Column.span3().style().setTextAlign("right").get();
+            String str = fmtDefault.format(restriction.getNrOfPoints()) + " " + messages.result_nr_of_points();
+            col.appendChild(span().textContent(str));
+            row.appendChild(col);                        
+        }
+        return row.element();        
+    }
+    
 
     /*
      * Selektiert via GUI aus einer Liste mit mehreren Grundstücken ein Grundstück.
@@ -951,11 +1285,9 @@ public class App implements EntryPoint {
             resultDiv.remove();
         }
         
+        updateUrlLocation(null);
+        
         resultCard.style.visibility = "hidden";
-
-//        avElement.reset();
-//        grundbuchElement.reset();
-//        oerebElement.reset();
     }
 
     private void addFeaturesToHighlightingVectorLayer(Feature[] features) {
@@ -1048,4 +1380,33 @@ public class App implements EntryPoint {
         return null;
     }
 
+    private String fixUrl(String url) {
+        return url
+                .replace("%3A%2F%2F", "://")
+                .replace("%2C", ",")
+                .replace("%2F", "/")
+                .replace("%3A", ":")
+                .replace("%3F", "?")
+                .replace("%3D", "=");
+    }
+    
+    private void updateUrlLocation(String egrid) {
+        URL url = new URL(DomGlobal.location.href);
+        String host = url.host;
+        String protocol = url.protocol;
+        String pathname = url.pathname;
+        
+        String newUrl = protocol + "//" + host + pathname;
+        if (egrid != null) {
+            URLSearchParams params = url.searchParams;
+            params.set("egrid", egrid);
+            newUrl += "?" + params.toString(); 
+        } 
+        updateUrlWithoutReloading(newUrl);
+    }
+
+    // Update the URL in the browser without reloading the page.
+    private static native void updateUrlWithoutReloading(String newUrl) /*-{
+        $wnd.history.pushState(newUrl, "", newUrl);
+    }-*/;
 }

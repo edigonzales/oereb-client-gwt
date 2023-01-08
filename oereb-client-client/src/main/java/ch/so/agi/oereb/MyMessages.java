@@ -51,7 +51,33 @@ public interface MyMessages extends Messages {
     @DefaultMessage("Themes without data")
     String result_theme_theme_without_data();
 
-        
+    @DefaultMessage("Opacity")
+    String result_wms_opacity();
+
+    @DefaultMessage("Type")
+    String result_type_name();
+
+    @DefaultMessage("Share")
+    String result_share_name();
+
+    @DefaultMessage("Share %")
+    String result_share_in_percent_name();
+    
+    @DefaultMessage("Point(s)")
+    String result_nr_of_points();
+
+    @DefaultMessage("Legal provisions)")
+    String result_documents_legal_provisions();
+
+    @DefaultMessage("Laws)")
+    String result_documents_laws();
+
+    @DefaultMessage("Hints)")
+    String result_documents_hints();
+    
+    @DefaultMessage("Responsible offices)")
+    String result_responsible_offices();
+    
     @DefaultMessage("Fubar")
     String fubar();
     

@@ -166,6 +166,27 @@ body, div {
     width: 30%;     
 }
 
+.result-real-estate-info-title {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.result-real-estate-info-text {
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.sup, .sub {
+  vertical-align: baseline;
+  position: relative;
+  top: -0.4em;
+  font-size: 0.8em;
+}
+
+.sub { 
+  top: 0.4em; 
+}
+
 /* Damit die Farbe des Textes immer gleich ist und nicht aufgrund der Hintergrundfarbe
  * automagisch ändert */
 .panel-title>a, .panel-title>small, .panel-title>.small, .panel-title>small>a, .panel-title>.small>a {
@@ -246,6 +267,34 @@ div.accordion-panel-concerned-theme h4 {
     color: black;
     padding: 10px 15px 10px 15px;
 }
+
+.fake-column {
+    padding: 15px 0px 0px 0px;
+    border-bottom: 1px #bdbdbd solid;
+}
+
+.restriction-row {
+    padding: 5px 0px 5px 0px;   
+}
+
+.font-semi-bold {
+    font-weight: 500;
+}
+
+.result-link {
+    color: #2196F3;  
+}
+
+a.result-link:hover {
+    color: #2196F3;
+    text-decoration: underline !important;
+}  
+
+a.result-link:visited {
+    color: #2196F3; 
+    text-decoration: underline !important;
+}  
+
 
 /*
 

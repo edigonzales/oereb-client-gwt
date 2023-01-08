@@ -77,7 +77,6 @@
           <skip>false</skip>
         </configuration>
       </plugin>
-      <!-- Kills live reload of css/html.-->
       <!--
       <plugin>
         <groupId>org.springframework.experimental</groupId>
@@ -183,6 +182,8 @@
               <argLine>-agentlib:native-image-agent=access-filter-file=src/test/resources/access-filter.json,config-merge-dir=target/classes/META-INF/native-image</argLine>
             </configuration>
           </plugin>
+      <!-- Kills live reload of css/html.-->
+      <!--
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
@@ -205,6 +206,8 @@
               </execution>
             </executions>
           </plugin>
+      -->
+
         </plugins>
       </build>
     </profile>
