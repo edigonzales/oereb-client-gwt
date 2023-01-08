@@ -384,7 +384,7 @@ public class App implements EntryPoint {
         grundstueck.setMunicipalityNumber(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/MunicipalityCode"));
         grundstueck.setSubunitOfLandRegister(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/SubunitOfLandRegister"));
         grundstueck.setSubunitOfLandRegisterDesignation(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/SubunitOfLandRegisterDesignation"));
-        grundstueck.setLandRegistryArea(Integer.valueOf(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/LandRegistryArea")));
+//        grundstueck.setLandRegistryArea(Integer.valueOf(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/LandRegistryArea")));
         
         // Concerned themes
         // ----------------

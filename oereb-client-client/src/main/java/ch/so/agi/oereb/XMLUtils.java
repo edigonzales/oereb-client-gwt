@@ -198,8 +198,8 @@ public class XMLUtils {
     
     // Path beginnt mit dem ersten Kindelement.
     public static void getElementsByPath(Element root, String path, List<Element> list) {
-        //console.log("root:"+root.getNodeName());
-        //console.log("path:"+path);
+        console.log("root:"+root.getNodeName());
+        console.log("path:"+path);
         
         if (root == null || path == null) return;
 
