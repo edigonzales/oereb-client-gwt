@@ -854,6 +854,7 @@ public class App implements EntryPoint {
 //            });  
             
             innerAccordion = Accordion.create()
+                    .multiOpen()
                     .setId("accordion-concerned-theme")
                     .setHeaderBackground(Color.GREY_LIGHTEN_4);
 
