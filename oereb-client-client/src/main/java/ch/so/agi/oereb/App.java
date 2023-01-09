@@ -23,10 +23,12 @@ import org.dominokit.domino.ui.collapsible.AccordionPanel;
 import org.dominokit.domino.ui.collapsible.Collapsible.HideCompletedHandler;
 import org.dominokit.domino.ui.collapsible.Collapsible.ShowCompletedHandler;
 import org.dominokit.domino.ui.dialogs.MessageDialog;
+import org.dominokit.domino.ui.forms.SuggestItem;
 import org.dominokit.domino.ui.grid.Column;
 import org.dominokit.domino.ui.grid.Row;
 import org.dominokit.domino.ui.grid.flex.FlexItem;
 import org.dominokit.domino.ui.grid.flex.FlexLayout;
+import org.dominokit.domino.ui.icons.Icon;
 import org.dominokit.domino.ui.icons.Icons;
 import org.dominokit.domino.ui.lists.ListGroup;
 import org.dominokit.domino.ui.sliders.Slider;
@@ -62,9 +64,11 @@ import elemental2.core.Global;
 import elemental2.core.JsArray;
 import elemental2.core.JsIIterableResult;
 import elemental2.core.JsIteratorIterable;
+import elemental2.core.JsNumber;
 import elemental2.core.JsString;
 import elemental2.dom.CSSProperties;
 import elemental2.dom.CustomEvent;
+import elemental2.dom.CustomEventInit;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Event;
 import elemental2.dom.EventListener;
@@ -217,6 +221,8 @@ public class App implements EntryPoint {
             public void handleEvent(Event evt) {                
                 CustomEvent customEvent = ((CustomEvent) evt);
                 SearchResult searchResult = (SearchResult) customEvent.detail;
+                
+                reset();
                 getEgrid(searchResult, true);
             }
         });
@@ -230,6 +236,82 @@ public class App implements EntryPoint {
         resultCard.appendChild(fadeoutBottomDiv);
 
         body().add(resultCard);
+        
+        URL url = new URL(DomGlobal.window.location.href);
+        String egrid = url.searchParams.get("egrid");
+        if (egrid != null) {
+            // Das ist jetzt unschön. Da ich einige bis viele Infos unterwegs zusammensammle, reicht mir
+            // der EGID allein nicht. Ich muss also von vorne anfangen, wenn ich nicht super viel rewriten 
+            // will.
+            // 1. Coordinate aus EGID
+            // 2. Canton aus Coordinate
+            // 3. EGRID aus Canton und Coordinate
+            reset();
+            
+            getCoordFromEgrid(egrid);                        
+        }
+    }
+    
+    private void getCoordFromEgrid(String egrid) {
+        DomGlobal.fetch(SEARCH_SERVICE_URL + egrid.trim()).then(response -> {
+            if (!response.ok) {
+                return null;
+            }
+            return response.text();
+        }).then(json -> {
+            JsPropertyMap<?> parsed = Js.cast(Global.JSON.parse(json));
+            JsArray<?> results = Js.cast(parsed.get("results"));
+            for (int i = 0; i < results.length; i++) {
+                JsPropertyMap<?> resultObj = Js.cast(results.getAt(i));
+                if (resultObj.has("attrs")) {
+                    JsPropertyMap attrs = (JsPropertyMap) resultObj.get("attrs");
+                    String label = ((JsString) attrs.get("label")).normalize();
+                    label = label.replace("<b>", "").replace("</b>", "");
+                    String origin = ((JsString) attrs.get("origin")).normalize();
+                    double easting = ((JsNumber) attrs.get("y")).valueOf();
+                    double northing = ((JsNumber) attrs.get("x")).valueOf();
+                    Coordinate coord = new Coordinate(easting, northing);
+                    
+                    getCantonFromCoord(coord);
+
+                }
+            }
+            return null;
+        }).catch_(error -> {
+            console.log(error);
+            return null;
+        });
+    }
+    
+    private void getCantonFromCoord(Coordinate coord) {
+        String coordStr = coord.toStringXY(3).replace(" ", "");
+
+        DomGlobal.fetch(CANTON_SERVICE_URL + coordStr).then(response -> {
+            if (!response.ok) {
+                return null;
+            }
+            return response.text();
+        }).then(json -> {
+            JsPropertyMap<?> parsed = Js.cast(Global.JSON.parse(json));
+            JsArray<?> results = Js.cast(parsed.get("results"));
+            if (results.length > 0) {
+                JsPropertyMap<?> resultObj = Js.cast(results.getAt(0));
+                if (resultObj.has("properties")) {
+                    JsPropertyMap properties = (JsPropertyMap) resultObj.get("properties");
+                    String canton = ((JsString) properties.get("ak")).normalize();                            
+                    
+                    SearchResult searchResult = new SearchResult();
+                    searchResult.setCanton(canton);
+                    searchResult.setCoordinate(coord);
+                    
+                    getEgrid(searchResult, true);
+                }
+            }
+            return null;
+        }).catch_(error -> {
+            console.log(error);
+            return null;
+        });            
     }
 
     private void getEgrid(SearchResult searchResult, boolean limit) {

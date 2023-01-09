@@ -207,10 +207,7 @@ public class SearchBox implements IsElement<HTMLElement> {
                             CustomEvent event = new CustomEvent("location_found", eventInit);
                             root.dispatchEvent(event);
                         }
-                        
-                        // https://api3.geo.admin.ch/rest/services/all/MapServer/identify?geometryFormat=geojson&geometryType=esriGeometryPoint&imageDisplay=1624,616,96&lang=en&layers=all:ch.swisstopo.swissboundaries3d-kanton-flaeche.fill&limit=1&mapExtent=2468000,1068500,2844000,1316500&returnGeometry=false&sr=2056&tolerance=1&geometry=2599558.846,1216956.994
-                        // -> BE statt SO
-                        
+                                                
                         
                         // TODO: 
                         // - nichts gefunden
@@ -236,5 +233,4 @@ public class SearchBox implements IsElement<HTMLElement> {
     public HTMLElement element() {
         return root;
     }
-
 }

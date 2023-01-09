@@ -180,7 +180,13 @@ public class XMLUtils {
                 String nodeName = childElement.getNodeName();
                 if (nodeName.contains(":"+pathElement) || nodeName.equalsIgnoreCase(pathElement)) {
                     if (pathElementsLength == 1) {
-                        return childElement.getFirstChild().getNodeValue();
+                        // hasChildNodes ist nötig, wenn leeres XML-Element vorhanden ist.
+                        // Z.B. <Text/> (BE bei Abbreviation)
+                        if (childElement.hasChildNodes()) {
+                            return childElement.getFirstChild().getNodeValue();
+                        } else {
+                            return null;
+                        }
                     } else {
                         return getElementValueByPath(childElement, path.substring(path.indexOf("/")+1), ret);
                     }
