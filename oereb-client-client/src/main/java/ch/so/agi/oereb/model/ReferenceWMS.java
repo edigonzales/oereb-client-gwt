@@ -7,6 +7,8 @@ public class ReferenceWMS {
     
     private String layers;
     
+    private String styles;
+    
     private Map<String,String> params;
     
     private String imageFormat;
@@ -31,6 +33,14 @@ public class ReferenceWMS {
 
     public void setLayers(String layers) {
         this.layers = layers;
+    }
+
+    public String getStyles() {
+        return styles;
+    }
+
+    public void setStyles(String styles) {
+        this.styles = styles;
     }
 
     public Map<String,String> getParams() {

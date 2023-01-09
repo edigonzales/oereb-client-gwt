@@ -438,15 +438,13 @@ public class App implements EntryPoint {
 
                 URL wmsUrl = new URL(fixUrl(localisedReferenceWmsText));      
                 
-                console.log(fixUrl(localisedReferenceWmsText));
-                console.log(wmsUrl);
-                
                 String host = wmsUrl.host;
                 String protocol = wmsUrl.protocol;
                 String pathname = wmsUrl.pathname;
                 
                 String layers = null;
                 String imageFormat = null;
+                String styles = null;
                 String transparent = null;
                 String searchParamsString = "";
                 URLSearchParams params = wmsUrl.searchParams;
@@ -464,11 +462,7 @@ public class App implements EntryPoint {
                     } else if (key.equalsIgnoreCase("TRANSPARENT")) {
                         transparent = value;
                     } else if (key.equalsIgnoreCase("STYLES")) {
-                        
-                        // in createOerebWmsLayer set(..,..) Styles setzen.
-                        // styles property in pojo
-                        
-                        // TODO
+                        styles = value;
                     } else if (key.equalsIgnoreCase("SERVICE") || key.equalsIgnoreCase("REQUEST")
                             || key.equalsIgnoreCase("VERSION") || key.equalsIgnoreCase("BBOX")
                             || key.equalsIgnoreCase("WIDTH") || key.equalsIgnoreCase("HEIGHT")
@@ -494,6 +488,7 @@ public class App implements EntryPoint {
                 referenceWMS.setBaseUrl(baseUrl);
                 referenceWMS.setImageFormat(imageFormat);
                 referenceWMS.setLayers(layers);
+                referenceWMS.setStyles(styles);
                 referenceWMS.setLayerOpacity(Double.valueOf(layerOpacity));
                 referenceWMS.setLayerIndex(Integer.valueOf(layerIndex));
                 theme.setReferenceWMS(referenceWMS);
@@ -696,7 +691,11 @@ public class App implements EntryPoint {
             if (grundstueck.getSubunitOfLandRegister() != null) {
                 Row row = Row.create();
                 row.style().cssText("padding-top:5px;");
-                row.appendChild(Column.span6().css("result-real-estate-info-title").setTextContent(grundstueck.getSubunitOfLandRegisterDesignation()+":"));
+                String subunit = grundstueck.getSubunitOfLandRegisterDesignation();
+                if (grundstueck.getSubunitOfLandRegisterDesignation() == null) {
+                    subunit = messages.result_subunit_of_land_register_designation();
+                } 
+                row.appendChild(Column.span6().css("result-real-estate-info-title").setTextContent(subunit+":"));
                 row.appendChild(Column.span6().css("result-real-estate-info-text").setTextContent(grundstueck.getSubunitOfLandRegister()));
                 div.appendChild(row.element());
             }
@@ -1333,6 +1332,9 @@ public class App implements EntryPoint {
     private Image createOerebWmsLayer(ReferenceWMS referenceWms) {
         ImageWmsParams imageWMSParams = OLFactory.createOptions();
         imageWMSParams.setLayers(referenceWms.getLayers());
+        if (referenceWms.getStyles() != null) {
+            imageWMSParams.set("STYLES", referenceWms.getStyles());
+        }
 
         ImageWmsOptions imageWMSOptions = OLFactory.createOptions();
 

@@ -38,6 +38,9 @@ public interface MyMessages extends Messages {
     
     @DefaultMessage("Land register type")
     String result_land_register_type();
+    
+    @DefaultMessage("Land register")
+    String result_subunit_of_land_register_designation();
 
     @DefaultMessage("Real estate nr {0}")
     String result_header_real_estate(String number);
