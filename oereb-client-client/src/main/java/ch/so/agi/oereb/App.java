@@ -23,14 +23,14 @@ import org.dominokit.domino.ui.collapsible.AccordionPanel;
 import org.dominokit.domino.ui.collapsible.Collapsible.HideCompletedHandler;
 import org.dominokit.domino.ui.collapsible.Collapsible.ShowCompletedHandler;
 import org.dominokit.domino.ui.dialogs.MessageDialog;
-import org.dominokit.domino.ui.forms.SuggestItem;
 import org.dominokit.domino.ui.grid.Column;
 import org.dominokit.domino.ui.grid.Row;
 import org.dominokit.domino.ui.grid.flex.FlexItem;
 import org.dominokit.domino.ui.grid.flex.FlexLayout;
-import org.dominokit.domino.ui.icons.Icon;
 import org.dominokit.domino.ui.icons.Icons;
 import org.dominokit.domino.ui.lists.ListGroup;
+import org.dominokit.domino.ui.loaders.Loader;
+import org.dominokit.domino.ui.loaders.LoaderEffect;
 import org.dominokit.domino.ui.sliders.Slider;
 import org.dominokit.domino.ui.style.Color;
 import org.dominokit.domino.ui.style.ColorScheme;
@@ -68,7 +68,6 @@ import elemental2.core.JsNumber;
 import elemental2.core.JsString;
 import elemental2.dom.CSSProperties;
 import elemental2.dom.CustomEvent;
-import elemental2.dom.CustomEventInit;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.Event;
 import elemental2.dom.EventListener;
@@ -132,6 +131,7 @@ public class App implements EntryPoint {
     private static final String HIGHLIGHT_VECTOR_LAYER_ID = "highlight_vector_layer";
     private static final String HIGHLIGHT_VECTOR_FEATURE_ID = "highlight_fid";
 
+    private Loader loader;
     private Map map;
     private HTMLElement mapElement;
     private ol.Overlay realEstatePopup;
@@ -211,6 +211,9 @@ public class App implements EntryPoint {
         map = new GeodiensteMapPreset().getMap(MAP_DIV_ID);
         map.addSingleClickListener(new MapSingleClickListener());
 
+        // Add loader
+        loader = Loader.create((HTMLElement) DomGlobal.document.body, LoaderEffect.ROTATION).setLoadingText(null);
+        
         // Search box
         SearchBox searchBox = new SearchBox(urlComponents, messages, SEARCH_SERVICE_URL, CANTON_SERVICE_URL);
         body().add(searchBox);
@@ -223,6 +226,7 @@ public class App implements EntryPoint {
                 SearchResult searchResult = (SearchResult) customEvent.detail;
                 
                 reset();
+                loader.start();
                 getEgrid(searchResult, true);
             }
         });
