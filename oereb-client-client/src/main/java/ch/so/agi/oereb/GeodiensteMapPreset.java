@@ -74,7 +74,8 @@ public class GeodiensteMapPreset implements MapPreset {
         //Coordinate centerCoordinate = new Coordinate(2616491, 1240287);
         //Coordinate centerCoordinate = new Coordinate(2600474,1215428);
         //Coordinate centerCoordinate = new Coordinate(2607358,1228752);
-        Coordinate centerCoordinate = new Coordinate(2599785,1215908);
+        //Coordinate centerCoordinate = new Coordinate(2599785,1215908);
+        Coordinate centerCoordinate = new Coordinate(2683354.500,1248769.250);
 
         view.setCenter(centerCoordinate);
         //view.setZoom(6);

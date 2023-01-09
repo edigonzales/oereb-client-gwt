@@ -178,7 +178,7 @@ public class XMLUtils {
             if (childNodes.item(i) instanceof Element) {
                 Element childElement = (Element) childNodes.item(i);
                 String nodeName = childElement.getNodeName();
-                if (nodeName.contains(":"+pathElement)) {
+                if (nodeName.contains(":"+pathElement) || nodeName.equalsIgnoreCase(pathElement)) {
                     if (pathElementsLength == 1) {
                         return childElement.getFirstChild().getNodeValue();
                     } else {
@@ -198,9 +198,11 @@ public class XMLUtils {
     
     // Path beginnt mit dem ersten Kindelement.
     public static void getElementsByPath(Element root, String path, List<Element> list) {
-        console.log("root:"+root.getNodeName());
-        console.log("path:"+path);
-        
+//        if (path.equalsIgnoreCase("Extract/RealEstate/RestrictionOnLandownership")) {
+//            console.log("root:"+root.getNodeName());
+//            console.log("path:"+path);            
+//        }
+                
         if (root == null || path == null) return;
 
         if (path.startsWith("/")) {
@@ -209,7 +211,10 @@ public class XMLUtils {
         
         String[] pathElements = path.split("/");
         int pathElementsLength = pathElements.length;
-        //console.log(pathElementsLength);
+
+//        if (path.equalsIgnoreCase("Extract/RealEstate/RestrictionOnLandownership")) {
+//            console.log(pathElementsLength);
+//        }
 
         String pathElement = pathElements[0];
         if (pathElement.endsWith("*") && pathElement.length() > 1) {
@@ -220,12 +225,18 @@ public class XMLUtils {
         for (int i=0; i<childNodes.getLength(); i++) {
             if (childNodes.item(i) instanceof Element) {
                 Element childElement = (Element) childNodes.item(i);
-                //console.log(childElement.getNodeName());
+//                if (path.equalsIgnoreCase("Extract/RealEstate/RestrictionOnLandownership")) {
+//                    console.log(childElement.getNodeName());
+//                }
                 String nodeName = childElement.getNodeName();
-                if (nodeName.contains(":"+pathElement) || pathElement.equals("*")) {
+//                console.log(childElement.getNamespaceURI());
+//                console.log(childElement.getPrefix());
+                // equalsIgnoreCase wurde später hinzgefügt, weil es korrekterweise Auszüge gibt,
+                // die kein ":" im Nodename liefern, da sie keinen Prefix haben.
+                // Ich denke, es werden so keine false positives gefunden.
+                if (nodeName.contains(":"+pathElement) || nodeName.equalsIgnoreCase(pathElement) || pathElement.equals("*")) {
                     //console.log("children found");
                     if (pathElementsLength == 1) {
-                        //console.log("abbruch");
                         list.add(childElement);
                     } else {
                         getElementsByPath(childElement, path.substring(path.indexOf("/")+1), list);
@@ -233,6 +244,9 @@ public class XMLUtils {
                 }
             }
         }
+//        if (path.equalsIgnoreCase("Extract/RealEstate/RestrictionOnLandownership")) {
+//            console.log(list.size());
+//        }
         return;
     }
 }

@@ -384,7 +384,7 @@ public class App implements EntryPoint {
         grundstueck.setMunicipalityNumber(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/MunicipalityCode"));
         grundstueck.setSubunitOfLandRegister(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/SubunitOfLandRegister"));
         grundstueck.setSubunitOfLandRegisterDesignation(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/SubunitOfLandRegisterDesignation"));
-//        grundstueck.setLandRegistryArea(Integer.valueOf(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/LandRegistryArea")));
+        grundstueck.setLandRegistryArea(Integer.valueOf(XMLUtils.getElementValueByPath(doc.getDocumentElement(), "Extract/RealEstate/LandRegistryArea")));
         
         // Concerned themes
         // ----------------
@@ -436,7 +436,11 @@ public class App implements EntryPoint {
                 XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "Map/ReferenceWMS", referenceWmsList);
                 String localisedReferenceWmsText = XMLUtils.getLocalisedTextByLanguage(referenceWmsList.get(0), LANGUAGE);
 
-                URL wmsUrl = new URL(fixUrl(localisedReferenceWmsText));                
+                URL wmsUrl = new URL(fixUrl(localisedReferenceWmsText));      
+                
+                console.log(fixUrl(localisedReferenceWmsText));
+                console.log(wmsUrl);
+                
                 String host = wmsUrl.host;
                 String protocol = wmsUrl.protocol;
                 String pathname = wmsUrl.pathname;
@@ -1383,11 +1387,16 @@ public class App implements EntryPoint {
     private String fixUrl(String url) {
         return url
                 .replace("%3A%2F%2F", "://")
+                .replace("%20", " ")
+                .replace("%26", "&")
+                .replace("%2B", "+")
                 .replace("%2C", ",")
                 .replace("%2F", "/")
                 .replace("%3A", ":")
+                .replace("%3B", ";")
                 .replace("%3F", "?")
-                .replace("%3D", "=");
+                .replace("%3D", "=")
+                .replace("%2520", "%20");
     }
     
     private void updateUrlLocation(String egrid) {
