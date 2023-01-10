@@ -1,8 +1,31 @@
 # oereb-client-gwt
 
-## todo
-- Achtung: alles was keinen AbortController hat, muss mit dem Loader für den Benutzer disabled werden. Sonst wird nicht sauber geresettet.
+Kantone, die nicht funktionieren, weil m.E. oder offensichtlich fehlerhaft:
 
+- AI: WMS verlangt Authentifizierung.
+- AR: WMS verlangt Authenfifizierung
+- BS: GEOMETRY=true funktioniert nicht.
+- FR: GEOMETRY wird nicht zurückgeliefert
+- LU: kein WMS
+- NW: ReferenceWMS fehlt
+- OW: ReferenceWMS fehlt
+- SG: WMS verlangt Authentifizerung
+- UR: Falsches Koordinatensystem
+- VS: Kein WMS, sondern ESRI-Irgendwas.
+
+Es funktionieren (teilweise Proxy):
+
+- AG
+- BE (sogar ohne Proxy)
+- BL
+- GR
+- JU
+- NE
+- SO
+- TG
+- TI
+- ZU
+- ZH
 
 ## Develop
 

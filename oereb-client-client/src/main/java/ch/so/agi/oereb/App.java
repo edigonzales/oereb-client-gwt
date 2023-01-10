@@ -252,6 +252,8 @@ public class App implements EntryPoint {
             // 3. EGRID aus Canton und Coordinate
             reset();
             
+            loader.start();
+            
             getCoordFromEgrid(egrid);                        
         }
     }
@@ -259,6 +261,7 @@ public class App implements EntryPoint {
     private void getCoordFromEgrid(String egrid) {
         DomGlobal.fetch(SEARCH_SERVICE_URL + egrid.trim()).then(response -> {
             if (!response.ok) {
+                loader.stop();
                 return null;
             }
             return response.text();
@@ -282,6 +285,7 @@ public class App implements EntryPoint {
             }
             return null;
         }).catch_(error -> {
+            loader.stop();
             console.log(error);
             return null;
         });
@@ -292,6 +296,7 @@ public class App implements EntryPoint {
 
         DomGlobal.fetch(CANTON_SERVICE_URL + coordStr).then(response -> {
             if (!response.ok) {
+                loader.stop();
                 return null;
             }
             return response.text();
@@ -313,6 +318,7 @@ public class App implements EntryPoint {
             }
             return null;
         }).catch_(error -> {
+            loader.stop();
             console.log(error);
             return null;
         });            
@@ -334,10 +340,12 @@ public class App implements EntryPoint {
 
         DomGlobal.fetch("proxy/getegrid/xml/?CANTON=" + canton + "&GEOMETRY=true&EN=" + coord).then(response -> {
             if (!response.ok) {
+                loader.stop();
                 DomGlobal.window.alert("!response.ok...");
                 return null;
             }
             if (response.status == 204) {
+                loader.stop();
                 DomGlobal.window.alert("No EGRID found. Response code: 204.");
                 return null;
             }
@@ -348,6 +356,7 @@ public class App implements EntryPoint {
             List<Grundstueck> grundstueckeList = XMLUtils.createGrundstuecke(doc.getDocumentElement(), LANGUAGE);
 
             if (grundstueckeList.size() == 0) {
+                loader.stop();
                 DomGlobal.window.alert("No EGRID found.");
                 return null;
             }
@@ -376,6 +385,7 @@ public class App implements EntryPoint {
             
             return null;
         }).catch_(error -> {
+            loader.stop();
             console.log(error);
             return null;
         });
@@ -443,10 +453,12 @@ public class App implements EntryPoint {
         DomGlobal.fetch("proxy/extract/xml/?CANTON=" + grundstueck.getCanton() + "&GEOMETRY=false&EGRID="
                 + grundstueck.getEgrid()).then(response -> {
                     if (!response.ok) {
+                        loader.stop();
                         DomGlobal.window.alert("!response.ok...");
                         return null;
                     }
                     if (response.status == 204) {
+                        loader.stop();
                         DomGlobal.window.alert("No EGRID found. Response code: 204.");
                         return null;
                     }
@@ -456,6 +468,7 @@ public class App implements EntryPoint {
                     renderResponse(grundstueck);
                     return null;
                 }).catch_(error -> {
+                    loader.stop();
                     console.log(error);
                     return null;
                 });
@@ -485,6 +498,7 @@ public class App implements EntryPoint {
         XMLUtils.getElementsByPath(doc.getDocumentElement(), "Extract/RealEstate/RestrictionOnLandownership", restrictionOnLandownershipList);
         
         if (restrictionOnLandownershipList.size() == 0) {
+            loader.stop();
             Window.alert("should not reach here");
         }
         
@@ -1197,6 +1211,8 @@ public class App implements EntryPoint {
         resultCard.style.height = CSSProperties.HeightUnionType.of(RESULT_CARD_HEIGHT);
         resultCard.style.overflow = "auto";
         resultCard.style.visibility = "visible";
+        
+        loader.stop();
     }
     
     private HTMLElement processRestrictionRow(Restriction restriction, GeometryType type) {
@@ -1258,7 +1274,7 @@ public class App implements EntryPoint {
      * Selektiert via GUI aus einer Liste mit mehreren Grundstücken ein Grundstück.
      */
     private void selectEgrid(List<Grundstueck> grundstueckeList, Coordinate coord, String canton) {
-        console.log("select egrid in gui");
+        //console.log("select egrid in gui");
         if (realEstatePopup != null) {
             map.removeOverlay(realEstatePopup);
         }
@@ -1303,6 +1319,7 @@ public class App implements EntryPoint {
                 Feature[] fs = new Feature[] { f };
                 addFeaturesToHighlightingVectorLayer(fs);
 
+                loader.start();
                 getExtract(g);
             });
 
@@ -1315,6 +1332,8 @@ public class App implements EntryPoint {
             map.removeOverlay(realEstatePopup);
         });
 
+        loader.stop();
+        
         DivElement overlay = Js.cast(popupElement);
         OverlayOptions overlayOptions = OLFactory.createOptions();
         overlayOptions.setElement(overlay);
@@ -1328,6 +1347,8 @@ public class App implements EntryPoint {
         @Override
         public void onEvent(MapBrowserEvent event) {
             reset();
+            
+            loader.start();
 
 //            mapElement.style.pointerEvents = "none";
             ol.Coordinate coordinate = event.getCoordinate();
@@ -1357,6 +1378,7 @@ public class App implements EntryPoint {
                 }
                 return null;
             }).catch_(error -> {
+                loader.stop();
                 console.log(error);
                 return null;
             });
