@@ -1208,6 +1208,7 @@ public class App implements EntryPoint {
         HTMLElement symbol = img().attr("src", srcAttr)
                 .attr("alt", "Symbol " + restriction.getLegendText())
                 .attr("width", "30px")
+                .attr("loading", "lazy")
                 .style("border: 0px solid black").element();
 
         row.appendChild(Column.span1().appendChild(symbol));
