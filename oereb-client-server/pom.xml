@@ -12,7 +12,7 @@
   <artifactId>oereb-client-server</artifactId>
   <!--<packaging>war</packaging>-->
   <properties>
-    <java.version>11</java.version>
+    <java.version>17</java.version>
     <spring-native.version>0.11.4</spring-native.version>
   </properties>
   <dependencies>
@@ -49,16 +49,6 @@
       <artifactId>spring-native</artifactId>
       <version>${spring-native.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-core</artifactId>
-      <version>8.9.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.lucene</groupId>
-      <artifactId>lucene-queryparser</artifactId>
-      <version>8.9.0</version>
-    </dependency>
   </dependencies>
   <build>
     <finalName>oereb-client</finalName>
@@ -77,7 +67,6 @@
           <skip>false</skip>
         </configuration>
       </plugin>
-      <!--
       <plugin>
         <groupId>org.springframework.experimental</groupId>
         <artifactId>spring-aot-maven-plugin</artifactId>
@@ -102,7 +91,6 @@
           </execution>
         </executions>
       </plugin>
-      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
@@ -164,7 +152,7 @@
       <id>native</id>
       <properties>
         <repackage.classifier>exec</repackage.classifier>
-        <native-buildtools.version>0.9.11</native-buildtools.version>
+        <native-buildtools.version>0.9.13</native-buildtools.version>
       </properties>
       <dependencies>
         <dependency>
@@ -182,8 +170,6 @@
               <argLine>-agentlib:native-image-agent=access-filter-file=src/test/resources/access-filter.json,config-merge-dir=target/classes/META-INF/native-image</argLine>
             </configuration>
           </plugin>
-      <!-- Kills live reload of css/html.-->
-      <!--
           <plugin>
             <groupId>org.graalvm.buildtools</groupId>
             <artifactId>native-maven-plugin</artifactId>
@@ -206,8 +192,6 @@
               </execution>
             </executions>
           </plugin>
-      -->
-
         </plugins>
       </build>
     </profile>

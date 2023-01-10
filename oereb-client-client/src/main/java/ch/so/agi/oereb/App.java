@@ -627,7 +627,7 @@ public class App implements EntryPoint {
 
             ConcernedTheme theme = concernedThemesMap.get(localisedThemeName);
             if(theme.getRestrictions().containsKey(typeTriple)) {
-                console.log(typeTriple + " bereits vorhanden");
+                //console.log(typeTriple + " bereits vorhanden");
 
                 Restriction restriction = theme.getRestrictions().get(typeTriple);
                 if (areaShare != null) {

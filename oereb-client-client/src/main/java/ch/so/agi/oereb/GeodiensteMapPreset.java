@@ -71,16 +71,18 @@ public class GeodiensteMapPreset implements MapPreset {
         viewOptions.setProjection(projection);
         viewOptions.setResolutions(new double[] { 4000.0, 2000.0, 1000.0, 500.0, 250.0, 100.0, 50.0, 20.0, 10.0, 5.0, 2.5, 1.0, 0.5, 0.25, 0.1 });
         View view = new View(viewOptions);
-        //Coordinate centerCoordinate = new Coordinate(2616491, 1240287);
+        Coordinate centerCoordinate = new Coordinate(2657250, 1191500);
+        //Coordinate centerCoordinate = new Coordinate(2616491, 1240287); // SO (Mitte)
         //Coordinate centerCoordinate = new Coordinate(2600474,1215428);
         //Coordinate centerCoordinate = new Coordinate(2607358,1228752); // SO (Polygon mit Loch)
-        Coordinate centerCoordinate = new Coordinate(2599785,1215908);
+        //Coordinate centerCoordinate = new Coordinate(2599785,1215908);
         //Coordinate centerCoordinate = new Coordinate(2683354.500,1248769.250); // ZH
         //Coordinate centerCoordinate = new Coordinate(2646625, 1248730); // AG
 
         view.setCenter(centerCoordinate);
-        //view.setZoom(6);
-        view.setZoom(13);
+        view.setZoom(3);
+        //view.setZoom(6); // SO
+        //view.setZoom(13);
         
         MapOptions mapOptions = OLFactory.createOptions();
         mapOptions.setTarget(mapId);
