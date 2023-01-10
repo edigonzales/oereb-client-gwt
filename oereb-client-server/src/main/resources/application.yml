@@ -72,6 +72,13 @@ app:
       ZG: https://oereb.zg.ch/ors/
       ZH: https://maps.zh.ch/oereb/v2/
     notSupportedCantons:
+      - AI
+      - AR
+      - BS
+      - FR
+      - NW
+      - OW
+      - SG
       - GE
       - GL
       - LU
