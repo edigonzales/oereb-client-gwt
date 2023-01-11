@@ -723,6 +723,14 @@ public class App implements EntryPoint {
                         document.setIdx(1);
                     }
                                         
+                    // FIXME
+                    // TODO 
+                    // Gibt ein Problem beim Hinzufügen, falls das Null ist.
+                    // Ist das wegen des Sets? Workaround.
+                    if (document.getTextAtWeb() == null) {
+                        document.setTextAtWeb("");
+                    }
+                                       
                     theme.getDocuments().add(document);
                 }
             }
@@ -1043,10 +1051,10 @@ public class App implements EntryPoint {
                             .filter(d -> d.getType().equalsIgnoreCase("Hint"))
                             .sorted(Comparator.comparingInt(Document::getIdx))
                             .collect(Collectors.toCollection(LinkedList::new));
-                    
-                    if (documents.size() > 0) {
+
+                    if (documents.size() > 0) {                        
                         contentDiv.appendChild(div().css(Styles.padding_5).element());                    
-                        contentDiv.appendChild(div().css("font-semi-bold").textContent(messages.result_documents_laws()).element());
+                        contentDiv.appendChild(div().css("font-semi-bold").textContent(messages.result_documents_hints()).element());
                         
                         for (Document document : documents) {
                             String title = document.getTitle();
@@ -1062,7 +1070,7 @@ public class App implements EntryPoint {
                                 linkName += ", " + number;
                             }
                             
-                            if (textAtWeb != null) {
+                            if (textAtWeb != null || textAtWeb.trim().length() > 0) {
                                 HTMLElement link = a().css("result-link")
                                         .attr("href", textAtWeb)
                                         .attr("target", "_blank")
