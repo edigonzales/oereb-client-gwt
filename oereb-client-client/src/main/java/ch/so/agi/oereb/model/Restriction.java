@@ -1,5 +1,7 @@
 package ch.so.agi.oereb.model;
 
+import static elemental2.dom.DomGlobal.console;
+
 public class Restriction {
     private String legendText;
     
@@ -78,6 +80,7 @@ public class Restriction {
     }
     
     public void updateAreaShare(Integer areaShare) {
+        console.log("alt: " + this.areaShare);
         this.areaShare += areaShare;
     }
 

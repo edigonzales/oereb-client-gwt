@@ -493,6 +493,10 @@ public class App implements EntryPoint {
         // Eine Restriction wird über typeCode und typeCodelist gruppiert.
         // Annahme: Restrictions mit gleichem TypeTuple haben die gleichen Dokumente (so falsch
         // ist das nicht, oder sogar definitiv logisch/richtig?)
+        // 2023-01-11: Das reicht schlichtweg nicht. Weil typeCode/list nicht vorhanden sein muss, müssen
+        // zusätzliche Bedingungen definiert werden. Thema oder Subtheme plus SymbolRef. Das alles
+        // zusammen sollte für Gruppierung ok sein.
+        // Breakt es was anderes? -> Testen!
         LinkedHashMap<String,ConcernedTheme> concernedThemesMap = new LinkedHashMap<>();
         List<Element> restrictionOnLandownershipList = new ArrayList<Element>();
         XMLUtils.getElementsByPath(doc.getDocumentElement(), "Extract/RealEstate/RestrictionOnLandownership", restrictionOnLandownershipList);
@@ -617,9 +621,26 @@ public class App implements EntryPoint {
             }
             
             String typeCode = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "TypeCode");
+            if (typeCode == null) {
+                typeCode = "";
+            }
             String typeCodelist = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "TypeCodelist");
-            TypeTriple typeTriple = new TypeTriple(typeCode, typeCodelist, lawStatus);
             
+            String themeCode = concernedThemesMap.get(localisedThemeName).getCode();
+            String subThemeCode = concernedThemesMap.get(localisedThemeName).getSubtheme();
+            
+            String myThemeCode;
+            if (subThemeCode != null) {
+                myThemeCode = subThemeCode;
+            } else {
+                myThemeCode = themeCode;
+            }
+            
+            String symbolRef = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "SymbolRef");
+            
+            TypeTriple typeTriple = new TypeTriple(myThemeCode, typeCode, typeCodelist, symbolRef, lawStatus);
+            //console.log(typeTriple);
+                        
             String areaShare = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "AreaShare");
             String partInPercent = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "PartInPercent");
             String lengthShare = XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "LengthShare");
@@ -655,7 +676,7 @@ public class App implements EntryPoint {
                 restriction.setTypeCode(XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "typeCode"));
                 restriction.setTypeCodelist(XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "typeCodelist"));
                 restriction.setSymbolRef(XMLUtils.getElementValueByPath(restrictionOnLandownershipElement, "SymbolRef"));
-
+                
                 if (areaShare != null) {
                     restriction.setAreaShare(Integer.valueOf(areaShare));
                 }

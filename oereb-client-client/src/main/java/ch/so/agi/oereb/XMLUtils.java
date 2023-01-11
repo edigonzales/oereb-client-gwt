@@ -157,8 +157,8 @@ public class XMLUtils {
     public static String getElementValueByPath(Element root, String path, String ret) {
         if (root == null || path == null) return null;
         
-        //console.log("root:"+root.getNodeName());
-        //console.log("path:"+path);
+//        console.log("root:"+root.getNodeName());
+//        console.log("path:"+path);
 
         if (path.startsWith("/")) {
             path = path.substring(1);
@@ -174,11 +174,37 @@ public class XMLUtils {
         }
         
         NodeList childNodes = root.getChildNodes();
+        
+//        console.log("------------");
+//        console.log(path);
+//        if (path.equalsIgnoreCase("TypeCode")) {
+//            for (int i=0; i<childNodes.getLength(); i++) {
+//                if (childNodes.item(i) instanceof Element) {
+//                    Element childElement = (Element) childNodes.item(i);
+//                    String nodeName = childElement.getNodeName();
+//                    console.log(nodeName);
+//
+//                }
+//            }
+//        }
+                
         for (int i=0; i<childNodes.getLength(); i++) {
             if (childNodes.item(i) instanceof Element) {
                 Element childElement = (Element) childNodes.item(i);
                 String nodeName = childElement.getNodeName();
-                if (nodeName.contains(":"+pathElement) || nodeName.equalsIgnoreCase(pathElement)) {
+                
+               String prefix = childElement.getPrefix();
+               String localNodeName = null;
+               if (nodeName.contains(":")) {
+                   localNodeName = nodeName.replace(prefix+":", "");
+               } else {
+                   localNodeName = nodeName;
+               }
+                
+               // FIXME / TODO: in anderen Methoden auch ändern.
+               
+               //if (nodeName.contains(":"+pathElement) || nodeName.equalsIgnoreCase(pathElement)) {
+               if (localNodeName.equalsIgnoreCase(pathElement)) {
                     if (pathElementsLength == 1) {
                         // hasChildNodes ist nötig, wenn leeres XML-Element vorhanden ist.
                         // Z.B. <Text/> (BE bei Abbreviation)
