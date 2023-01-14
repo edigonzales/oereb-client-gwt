@@ -439,7 +439,7 @@ public class App implements EntryPoint {
 
         headerRow = div().id("result-header-row").element();
         HTMLElement resultParcelSpan = span().id("result-parcel-span")
-                .textContent(messages.result_header_real_estate(grundstueck.getNummer() + " (" + grundstueck.getEgrid()) + ")").element();
+                .textContent(messages.result_header_real_estate(grundstueck.getNummer())).element();
 
         HTMLElement resultButtonSpan = span().id("result-button-span").element();
         resultButtonSpan.appendChild(expandBtn.element());
@@ -844,6 +844,14 @@ public class App implements EntryPoint {
             row.appendChild(Column.span6().css("result-real-estate-info-text").setTextContent(grundstueck.getArt()));
             div.appendChild(row.element());
         }
+        {
+            Row row = Row.create();
+            row.style().cssText("padding-top:5px;");
+            row.appendChild(Column.span6().css("result-real-estate-info-title").setTextContent("E-GRID:"));
+            row.appendChild(Column.span6().css("result-real-estate-info-text").setTextContent(grundstueck.getEgrid()));
+            div.appendChild(row.element());
+        }
+
         
         Accordion accordion = Accordion.create()
                 .setHeaderBackground(Color.GREY_LIGHTEN_3)
