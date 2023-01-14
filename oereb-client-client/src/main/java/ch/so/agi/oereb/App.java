@@ -503,7 +503,8 @@ public class App implements EntryPoint {
         
         if (restrictionOnLandownershipList.size() == 0) {
             loader.stop();
-            Window.alert("should not reach here");
+            // Doch. Es ist korrekt, falls ein Grundstück keine ÖREB hat.
+            //Window.alert("should not reach here");
         }
         
         for (Element restrictionOnLandownershipElement : restrictionOnLandownershipList) {
@@ -535,7 +536,6 @@ public class App implements EntryPoint {
 
                 // TODO: 
                 // - port 
-                // - styles
                 List<Element> referenceWmsList = new ArrayList<Element>();
                 XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "Map/ReferenceWMS", referenceWmsList);
                 String localisedReferenceWmsText = XMLUtils.getLocalisedTextByLanguage(referenceWmsList.get(0), LANGUAGE);
