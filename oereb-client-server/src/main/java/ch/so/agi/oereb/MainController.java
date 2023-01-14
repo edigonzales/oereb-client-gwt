@@ -105,6 +105,8 @@ public class MainController {
             requestUrl += request + "/xml/?GEOMETRY=" + withGeometry + "&EGRID=" + egrid;  
         }
                 
+        log.info(requestUrl);
+        
         HttpResponse<String> response = null;
         try {
             HttpRequest httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
