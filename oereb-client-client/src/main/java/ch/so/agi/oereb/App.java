@@ -184,7 +184,6 @@ public class App implements EntryPoint {
                     for (int i = 0; i < notSupportedCantonsArray.length; i++) {
                         NOT_SUPPORTED_CANTONS.add(notSupportedCantonsArray[i].asString());
                     }
-
                 } catch (Exception e) {
                     DomGlobal.window.alert("Error loading settings!");
                     DomGlobal.console.error("Error loading settings!", e);
@@ -539,9 +538,9 @@ public class App implements EntryPoint {
                 List<Element> referenceWmsList = new ArrayList<Element>();
                 XMLUtils.getElementsByPath(restrictionOnLandownershipElement, "Map/ReferenceWMS", referenceWmsList);
                 String localisedReferenceWmsText = XMLUtils.getLocalisedTextByLanguage(referenceWmsList.get(0), LANGUAGE);
-
-                URL wmsUrl = new URL(fixUrl(localisedReferenceWmsText));      
                 
+                URL wmsUrl = new URL(fixUrl(localisedReferenceWmsText));      
+
                 String host = wmsUrl.host;
                 String protocol = wmsUrl.protocol;
                 String pathname = wmsUrl.pathname;
@@ -582,7 +581,8 @@ public class App implements EntryPoint {
                 }
                 
                 if (layers == null || imageFormat == null) {
-                    Window.alert("could not parse reference wms: " + localisedReferenceWmsText);
+                    Window.alert("could not find LAYERS and/or FORMAT parameter: " + localisedReferenceWmsText);
+                    reset();
                     return;
                 }
                                 
