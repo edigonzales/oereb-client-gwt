@@ -21,6 +21,7 @@ Es funktionieren (teilweise Proxy):
 - GR
 - JU
 - NE
+- SH
 - SO
 - TG
 - TI
