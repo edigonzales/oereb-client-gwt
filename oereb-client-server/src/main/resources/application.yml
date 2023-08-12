@@ -64,6 +64,7 @@ app:
       NW: https://oereb.gis-daten.ch/oereb/
       OW: https://oereb.gis-daten.ch/oereb/
       SG: https://oereb.geo.sg.ch/ktsg/wsgi/oereb/
+      SH: https://oereb.geo.sh.ch/
       SO: https://geo.so.ch/api/oereb/
       TG: https://map.geo.tg.ch/services/oereb/
       TI: https://cloud.geo.ti.ch/oereb2/
