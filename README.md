@@ -4,7 +4,7 @@ Kantone, die nicht funktionieren, weil m.E. oder offensichtlich fehlerhaft:
 
 - AI: WMS verlangt Authentifizierung.
 - AR: WMS verlangt Authenfifizierung
-- BS: GEOMETRY=true funktioniert nicht.
+- ~BS: GEOMETRY=true funktioniert nicht.~~ Ich mache für Extract einen geometry=false Request
 - FR: GEOMETRY wird nicht zurückgeliefert
 - LU: kein WMS
 - NW: ReferenceWMS fehlt
@@ -18,11 +18,14 @@ Es funktionieren (teilweise Proxy):
 - AG
 - BE (sogar ohne Proxy)
 - BL
+- BS
+- GL
 - GR
 - JU
 - NE
 - SH
 - SO
+- SZ
 - TG
 - TI
 - ZU

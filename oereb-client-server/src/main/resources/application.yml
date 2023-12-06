@@ -57,6 +57,7 @@ app:
       BL: https://oereb.geo.bl.ch/
       BS: https://api.oereb.bs.ch/
       FR: https://geo.fr.ch/RDPPF_ws/RdppfSVC.svc/
+      GL: https://map.geo.gl.ch/oereb/
       GR: https://oereb.geo.gr.ch/oereb/
       JU: https://geo.jura.ch/crdppf_server/
       LU: https://svc.geo.lu.ch/oereb/
@@ -65,6 +66,7 @@ app:
       OW: https://oereb.gis-daten.ch/oereb/
       SG: https://oereb.geo.sg.ch/ktsg/wsgi/oereb/
       SH: https://oereb.geo.sh.ch/
+      SZ: https://map.geo.sz.ch/oereb/
       SO: https://geo.so.ch/api/oereb/
       TG: https://map.geo.tg.ch/services/oereb/
       TI: https://cloud.geo.ti.ch/oereb2/
@@ -72,18 +74,16 @@ app:
       VS: https://rdppfvs.geopol.ch/  
       ZG: https://oereb.zg.ch/ors/
       ZH: https://maps.zh.ch/oereb/v2/
+      #LI: https://oereb.llv.li/oereb_service/
     notSupportedCantons:
       - AI
       - AR
-      - BS
       - FR
       - NW
       - OW
       - SG
       - GE
-      - GL
       - LU
-      - SZ
       - VD
       - VS
       - LI
