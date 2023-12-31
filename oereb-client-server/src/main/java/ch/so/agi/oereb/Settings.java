@@ -17,6 +17,8 @@ public class Settings {
     
     private String cantonServiceUrl;
 
+    private String identifyServiceUrl;
+    
     private HashMap<String,String> oerebServiceUrls;
     
     private List<String> notSupportedCantons;
@@ -43,6 +45,14 @@ public class Settings {
 
     public void setCantonServiceUrl(String cantonServiceUrl) {
         this.cantonServiceUrl = cantonServiceUrl;
+    }
+
+    public String getIdentifyServiceUrl() {
+        return identifyServiceUrl;
+    }
+
+    public void setIdentifyServiceUrl(String identifyServiceUrl) {
+        this.identifyServiceUrl = identifyServiceUrl;
     }
 
     public HashMap<String, String> getOerebServiceUrls() {

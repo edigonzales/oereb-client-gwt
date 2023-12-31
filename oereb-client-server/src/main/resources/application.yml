@@ -49,6 +49,7 @@ app:
     myVar: ${VAR:defaultValue}
     searchServiceUrl: ${SEARCH_SERVICE_URL:https://api3.geo.admin.ch/rest/services/api/SearchServer?sr=2056&origins=parcel,address&type=locations&searchText=}
     cantonServiceUrl: ${CANTON_SERVICE_URL:https://api3.geo.admin.ch/rest/services/all/MapServer/identify?geometryFormat=geojson&geometryType=esriGeometryPoint&lang=en&layers=all:ch.swisstopo.swissboundaries3d-kanton-flaeche.fill&limit=1&returnGeometry=false&sr=2056&tolerance=0&geometry=}
+    identifyServiceUrl: ${IDENTIFY_SERVICE_URL:https://api3.geo.admin.ch/rest/services/all/MapServer/identify?geometryFormat=geojson&geometryType=esriGeometryPoint&lang=en&layers=all:ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill&limit=1&returnGeometry=false&sr=2056&tolerance=0&geometry=}
     oerebServiceUrls:
       AG: https://api.geo.ag.ch/v2/oereb/
       AI: https://oereb.ai.ch/ktai/wsgi/oereb/
@@ -74,7 +75,7 @@ app:
       VS: https://rdppfvs.geopol.ch/  
       ZG: https://oereb.zg.ch/ors/
       ZH: https://maps.zh.ch/oereb/v2/
-      #LI: https://oereb.llv.li/oereb_service/
+      LI: https://oereb.llv.li/oereb_service/
     notSupportedCantons:
       - AI
       - AR
@@ -86,5 +87,4 @@ app:
       - LU
       - VD
       - VS
-      - LI
       

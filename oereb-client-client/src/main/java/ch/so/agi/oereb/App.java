@@ -109,6 +109,7 @@ public class App implements EntryPoint {
     private String myVar;
     private String SEARCH_SERVICE_URL;
     private String CANTON_SERVICE_URL;
+    private String IDENTIFY_SERVICE_URL;
     private JsPropertyMap<Object> OEREB_SERVICE_URLS;
     private List<String> NOT_SUPPORTED_CANTONS;
     private String RESULT_CARD_HEIGHT = "calc(100% - 215px)";
@@ -177,6 +178,7 @@ public class App implements EntryPoint {
                     JsPropertyMap<Object> propertiesMap = Js.asPropertyMap(Global.JSON.parse(responseText));
                     SEARCH_SERVICE_URL = propertiesMap.getAsAny("searchServiceUrl").asString();
                     CANTON_SERVICE_URL = propertiesMap.getAsAny("cantonServiceUrl").asString();
+                    IDENTIFY_SERVICE_URL = propertiesMap.getAsAny("identifyServiceUrl").asString();
                     OEREB_SERVICE_URLS = propertiesMap.getAsAny("oerebServiceUrls").asPropertyMap();
 
                     Any[] notSupportedCantonsArray = propertiesMap.getAsAny("notSupportedCantons").asArray();
@@ -292,8 +294,8 @@ public class App implements EntryPoint {
     
     private void getCantonFromCoord(Coordinate coord) {
         String coordStr = coord.toStringXY(3).replace(" ", "");
-
-        DomGlobal.fetch(CANTON_SERVICE_URL + coordStr).then(response -> {
+        
+        DomGlobal.fetch(IDENTIFY_SERVICE_URL + coordStr).then(response -> {
             if (!response.ok) {
                 loader.stop();
                 return null;
@@ -306,7 +308,7 @@ public class App implements EntryPoint {
                 JsPropertyMap<?> resultObj = Js.cast(results.getAt(0));
                 if (resultObj.has("properties")) {
                     JsPropertyMap properties = (JsPropertyMap) resultObj.get("properties");
-                    String canton = ((JsString) properties.get("ak")).normalize();                            
+                    String canton = ((JsString) properties.get("kanton")).normalize();                            
                     
                     SearchResult searchResult = new SearchResult();
                     searchResult.setCanton(canton);
@@ -314,6 +316,8 @@ public class App implements EntryPoint {
                     
                     getEgrid(searchResult, true);
                 }
+            } else {
+                loader.stop();
             }
             return null;
         }).catch_(error -> {
@@ -325,8 +329,10 @@ public class App implements EntryPoint {
 
     private void getEgrid(SearchResult searchResult, boolean limit) {
         String canton = searchResult.getCanton();
-
         if (NOT_SUPPORTED_CANTONS.contains(canton)) {
+            reset();
+            loader.stop();
+            
             MessageDialog errorMessage = MessageDialog
                     .createMessage(messages.error_message_not_supported_canton_title(),
                             messages.error_message_not_supported_canton_detail(canton))
@@ -1394,8 +1400,9 @@ public class App implements EntryPoint {
             result.setCoordinate(coordinate);
 
             String coord = coordinate.toStringXY(3).replace(" ", "");
-
-            DomGlobal.fetch(CANTON_SERVICE_URL + coord).then(response -> {
+            
+            //console.log(IDENTIFY_SERVICE_URL + coord);
+            DomGlobal.fetch(IDENTIFY_SERVICE_URL + coord).then(response -> {
                 if (!response.ok) {
                     return null;
                 }
@@ -1407,11 +1414,21 @@ public class App implements EntryPoint {
                     JsPropertyMap<?> resultObj = Js.cast(results.getAt(0));
                     if (resultObj.has("properties")) {
                         JsPropertyMap properties = (JsPropertyMap) resultObj.get("properties");
-                        String canton = ((JsString) properties.get("ak")).normalize();
+                        Object cantonObj = properties.get("kanton");
+                        String canton;
+                        if (cantonObj != null) {
+                            canton = ((JsString) cantonObj).normalize();
+                        } else {
+                            // Man könnte/sollte/müsste vielleicht noch mehr prüfen. 
+                            // Machen wir uns es aber mal sehr einfach.
+                            canton = "LI";
+                        }
                         result.setCanton(canton);
 
                         getEgrid(result, false);
                     }
+                } else {
+                    loader.stop();
                 }
                 return null;
             }).catch_(error -> {

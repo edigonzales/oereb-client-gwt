@@ -9,8 +9,8 @@ Kantone, die nicht funktionieren, weil m.E. oder offensichtlich fehlerhaft:
 - LU: kein WMS
 - NW: ReferenceWMS fehlt
 - OW: ReferenceWMS fehlt
-- SG: WMS verlangt Authentifizerung
-- UR: Falsches Koordinatensystem
+- SG: WMS verlangt Authentifizerung (last checked 2023-12-31)
+- VD: URL-Aufruf gibt es. PDF-Endpunkt zeigt ins Leere -> Endpunkt unbekannt (last checked 2023-12-31).
 - VS: Kein WMS, sondern ESRI-Irgendwas.
 
 Es funktionieren (teilweise Proxy):

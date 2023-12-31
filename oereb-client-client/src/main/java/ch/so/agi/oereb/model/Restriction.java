@@ -80,7 +80,6 @@ public class Restriction {
     }
     
     public void updateAreaShare(Integer areaShare) {
-        console.log("alt: " + this.areaShare);
         this.areaShare += areaShare;
     }
 
